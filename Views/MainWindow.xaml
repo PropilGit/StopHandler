@@ -1,0 +1,64 @@
+﻿<Window x:Class="StopHandler.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+        xmlns:l="clr-namespace:StopHandler"
+        xmlns:vm ="clr-namespace:StopHandler.ViewModels"
+        
+        Title="TimerHandler"
+        Height="450" 
+        Width="650">
+    
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    
+    <DockPanel>
+        <TabControl DockPanel.Dock="Top">
+            <TabItem Header="POST">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="450*"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" 
+                           Margin="5,5,0,0"
+                           Content="Log"/>
+                    <ScrollViewer Grid.Column="0"
+                                  Margin="5,30,0,0">
+                        <TextBlock x:Name="tbl_log" 
+                                   TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                    <StackPanel Grid.Column="1"
+                                Margin="5,5,5,0">
+                        <Label Content="POST Server" 
+                               Margin="5,5,0,0"/>
+                        <DockPanel>
+                            <Label DockPanel.Dock="Left"
+                                   Margin="0,0,5,0"
+                                   Content="Port:"/>
+                            <TextBox Text="{Binding Port}"
+                                     VerticalContentAlignment="Center"
+                                     HorizontalContentAlignment="Center"
+                                     Width="50"/>
+                            <Label DockPanel.Dock="Right"
+                                   HorizontalContentAlignment="Center"
+                                   Content="(48654—48999)"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Telegram">
+                <Grid>
+                    <Rectangle Fill="Red"></Rectangle>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Timer">
+                <Grid>
+                    <Rectangle Fill="Red"></Rectangle>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

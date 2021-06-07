@@ -43,7 +43,7 @@ namespace StopHandler.core
             if (values == null || values.Length == 0) return null;
             foreach (var val in values) if (val == null || val == "") return null;
 
-            if (values[0] == "STOP") return StopCommand.GetInstance(values); //STOP
+            if (values[0] == "STOP") return StopCommand.Instantiate(values); //STOP
             else return null;
 
         }
