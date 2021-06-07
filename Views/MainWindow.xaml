@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         xmlns:l="clr-namespace:StopHandler"
-        xmlns:vm ="clr-namespace:StopHandler.ViewModels"
+        xmlns:vm="clr-namespace:StopHandler.ViewModels"
+        xmlns:cmd="clr-namespace:StopHandler.Infrastructure.Commands" 
         
         Title="TimerHandler"
         Height="450" 
@@ -27,7 +28,7 @@
                            Content="Log"/>
                     <ScrollViewer Grid.Column="0"
                                   Margin="5,30,0,0">
-                        <TextBlock x:Name="tbl_log" 
+                        <TextBlock Text="{Binding Log}" 
                                    TextWrapping="Wrap"/>
                     </ScrollViewer>
                     <StackPanel Grid.Column="1"
@@ -46,6 +47,11 @@
                                    HorizontalContentAlignment="Center"
                                    Content="(48654—48999)"/>
                         </DockPanel>
+                        <Button Content="TEST">
+                            <Button.Command>
+                                <cmd:CloseApplicationCommand/>
+                            </Button.Command>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </TabItem>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows;
+using System.Windows.Input;
 using StopHandler.ViewModels.Base;
 
 namespace StopHandler.ViewModels
@@ -12,5 +14,19 @@ namespace StopHandler.ViewModels
 
         public string Port { get => _Port; set => Set(ref _Port, value); }
         #endregion
+
+        #region Log
+        private string _Log = "";
+
+        public string Log { get => _Log; set => Set(ref _Log, value); }
+        #endregion
+
+        #region Commands
+
+        #endregion
+
+        public MainWindowViewModel()
+        {
+        }
     }
 }
