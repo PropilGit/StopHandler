@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StopHandler", "StopHandler.csproj", "{CA688A27-9911-40FF-86FC-0D3D428A7DDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA688A27-9911-40FF-86FC-0D3D428A7DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA688A27-9911-40FF-86FC-0D3D428A7DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA688A27-9911-40FF-86FC-0D3D428A7DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA688A27-9911-40FF-86FC-0D3D428A7DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {422FBFB2-7BEC-4B15-8228-7674DABDEB18}
+	EndGlobalSection
+EndGlobal
