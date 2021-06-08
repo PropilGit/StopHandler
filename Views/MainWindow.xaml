@@ -48,9 +48,7 @@
                                    Content="(48654—48999)"/>
                         </DockPanel>
                         <Button Content="TEST">
-                            <Button.Command>
-                                <cmd:CloseApplicationCommand/>
-                            </Button.Command>
+                            <!--Button.Command><cmd:CloseApplicationCommand/></--!>
                         </Button>
                     </StackPanel>
                 </Grid>
