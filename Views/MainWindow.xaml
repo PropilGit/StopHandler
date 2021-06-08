@@ -9,7 +9,8 @@
         
         Title="TimerHandler"
         Height="450" 
-        Width="650">
+        Width="650"
+        Closed="{Binding CloseApplicationCommand}">
     
     <Window.DataContext>
         <vm:MainWindowViewModel/>
