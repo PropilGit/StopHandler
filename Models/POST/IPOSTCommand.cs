@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StopHandler.core
+namespace StopHandler.Models.POST
 {
     interface IPOSTCommand
     {

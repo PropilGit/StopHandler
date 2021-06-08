@@ -6,14 +6,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StopHandler.core
+namespace StopHandler.Models.POST
 {
     class POSTServer
     {
         #region Singleton
 
         private static POSTServer instance;
-        public static POSTServer GetInstance(int port)
+        public static POSTServer GetInstance(int port = 48654)
         {
             if (instance == null) instance = new POSTServer(port);
             return instance;
@@ -27,13 +27,11 @@ namespace StopHandler.core
         public delegate void RequestPOST(IPOSTCommand command);
         public event RequestPOST onPOSTRequest;
 
-        //public delegate void ApplyPOST(int taskNum);
-        //public event ApplyPOST onPOSTApply;
-
         TcpListener listener;
         Thread listening;
 
         private int port = 48654;
+
         public POSTServer(int port)
         {
             if (port < 48654 || port > 48999)
@@ -45,6 +43,10 @@ namespace StopHandler.core
 
             listening = new Thread(new ThreadStart(Listen));
             listener = new TcpListener(IPAddress.Any, port);
+        }
+        ~POSTServer()
+        {
+            Stop();
         }
         public void Start()
         {
@@ -130,6 +132,7 @@ namespace StopHandler.core
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
             stream.Write(data, 0, data.Length);
         }
+
         /* public void SMTP_AlertReqest(int taskNum, int time)
         {
             WebRequest request = WebRequest.Create("https://bankrotforum.planfix.ru/webhook/json/timerAlert");
