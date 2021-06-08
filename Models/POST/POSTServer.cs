@@ -21,11 +21,33 @@ namespace StopHandler.Models.POST
 
         #endregion
 
+        #region Event UpdateLog
+
         public delegate void UpdateLog(string line);
         public event UpdateLog onLogUpdate;
+        void AddLog(string msg)
+        {
+            if (onLogUpdate != null)
+            {
+                onLogUpdate(msg);
+            }
+        }
+
+        #endregion
+
+        #region Event POSTRequest
 
         public delegate void RequestPOST(IPOSTCommand command);
         public event RequestPOST onPOSTRequest;
+        void POSTRequest(IPOSTCommand cmd)
+        {
+            if (onPOSTRequest != null)
+            {
+                onPOSTRequest(cmd);
+            }
+        }
+
+        #endregion
 
         TcpListener listener;
         Thread listening;
@@ -37,7 +59,7 @@ namespace StopHandler.Models.POST
             if (port < 48654 || port > 48999)
             {
                 this.port = 48654;
-                onLogUpdate("ОШИБКА: Не удалось запустить сервер на порту " + port + "! Использован порт по умолчанию (48654).");
+                AddLog("ОШИБКА: Не удалось запустить сервер на порту " + port + "! Использован порт по умолчанию (48654).");
             }
             else this.port = port;
 
@@ -61,10 +83,10 @@ namespace StopHandler.Models.POST
         {
             try
             {
-                onLogUpdate("Запуск сервера обработки POST-запросов...");
+                AddLog("Запуск сервера обработки POST-запросов...");
                 Thread.Sleep(3000);
                 listener.Start();
-                onLogUpdate("Сервер обработки POST-запросов запущен. Ожидание запросов...");
+                AddLog("Сервер обработки POST-запросов запущен. Ожидание запросов...");
 
                 while (true)
                 {
@@ -73,7 +95,7 @@ namespace StopHandler.Models.POST
             }
             catch (Exception ex)
             {
-                onLogUpdate("ОШИБКА: Непредвиденная ошибка в POSTServer.cs/Listen(): " + ex.Message);
+                AddLog("ОШИБКА: Непредвиденная ошибка в POSTServer.cs/Listen(): " + ex.Message);
             }
         }
 
@@ -93,18 +115,18 @@ namespace StopHandler.Models.POST
                     IPOSTCommand cmd = POSTCommand.Parse(post);
                     if (cmd != null)
                     {
-                        onPOSTRequest(cmd);
-                        onLogUpdate(cmd.ToLog());
+                        POSTRequest(cmd);
+                        AddLog(cmd.ToLog());
                     }
                     else
                     {
-                        onLogUpdate("Полученный POST-запрос не соответствует критериям");
+                        AddLog("Полученный POST-запрос не соответствует критериям");
                     }
                 }  
             }
             catch (Exception ex)
             {
-                onLogUpdate("ОШИБКА: Ошибка при чтении POST-запроса: " + ex.Message);
+                AddLog("ОШИБКА: Ошибка при чтении POST-запроса: " + ex.Message);
             }
             finally
             {
@@ -132,6 +154,7 @@ namespace StopHandler.Models.POST
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
             stream.Write(data, 0, data.Length);
         }
+        
 
         /* public void SMTP_AlertReqest(int taskNum, int time)
         {

@@ -5,38 +5,21 @@ using System.Windows;
 using System.Windows.Input;
 using StopHandler.ViewModels.Base;
 using StopHandler.Models.POST;
+using StopHandler.Models;
 
 namespace StopHandler.ViewModels
 {
     class MainWindowViewModel : ViewModel
     {
-        #region Служебные поля
-
-        private POSTServer _MyPOSTServer;
-        
-        #endregion
-
-        #region Log
-        private string _Log = "";
-
-        public string Log { get => _Log; set => Set(ref _Log, value); }
-        #endregion
-
-        #region Functions
-
-        public void AddLog(string msg)
-        {
-            _Log += "[" + DateTime.Now + "] " + msg + "\n";
-        }
-
-        #endregion
+        Controller controller;
+        public string Log { get => controller.Log; }
 
         public MainWindowViewModel()
         {
-            _MyPOSTServer = POSTServer.GetInstance();
-            _MyPOSTServer.onLogUpdate += AddLog;
-
-            _MyPOSTServer.Start();
+            controller = new Controller();
         }
     }
 }
+
+
+//public string Log { get => controller.Log; set => Set(ref controller.Log, value); }
