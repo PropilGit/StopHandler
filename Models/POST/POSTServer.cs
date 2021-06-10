@@ -161,8 +161,12 @@ namespace StopHandler.Models.POST
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
             stream.Write(data, 0, data.Length);
         }
-        
-        /* public void SMTP_AlertReqest(int taskNum, int time)
+    }
+}
+
+
+/*  
+        public void SMTP_AlertReqest(int taskNum, int time)
         {
             WebRequest request = WebRequest.Create("https://bankrotforum.planfix.ru/webhook/json/timerAlert");
             request.Method = "POST";
@@ -176,6 +180,5 @@ namespace StopHandler.Models.POST
             {
                 dataStream.Write(byteArray, 0, byteArray.Length);
             }
-        }*/
-    }
-}
+        }
+*/

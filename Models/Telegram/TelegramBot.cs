@@ -86,7 +86,7 @@ namespace StopHandler.Models.Telegram
             await botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: msg,
-                parseMode: ParseMode.Markdown,
+                parseMode: ParseMode.Html,
                 disableNotification: true);
         }
 

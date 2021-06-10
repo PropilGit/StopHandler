@@ -20,7 +20,13 @@ namespace StopHandler.ViewModels
             _MyPOSTServer = InitializePOSTServer();
             _MyTelegramBot = InitializeTelegramBot();
 
-            SendMessageToTelegramChatCommand = new LambdaCommand(OnSendMessageToTelegramChatCommandExecuted, CanSendMessageToTelegramChatCommandExecute);
+            SendMessageToTelegramChatCommand = new LambdaCommand(
+                OnSendMessageToTelegramChatCommandExecuted, 
+                CanSendMessageToTelegramChatCommandExecute);
+
+            SendTestMessageToTelegramChatCommand = new LambdaCommand(
+                OnSendTestMessageToTelegramChatCommandExecuted,
+                CanSendTestMessageToTelegramChatCommandExecute);
         }
 
         #region Log
@@ -37,7 +43,7 @@ namespace StopHandler.ViewModels
 
         #region Message
 
-        private string _Message = "009";
+        private string _Message = "";
         public string Message { get => _Message; set => Set(ref _Message, value); }
 
         #endregion
@@ -60,9 +66,16 @@ namespace StopHandler.ViewModels
             switch (cmd.Identifier)
             {
                 case "STOP":
-                    ApplyStopCommand(cmd);
+                    ApplyStopCommand((StopCommand)cmd, -1001473601717);
+                    break;
                 default:
+                    break;
             }
+        }
+
+        void ApplyStopCommand(StopCommand stopCmd, long chatId)
+        {
+            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chatId);
         }
 
         #endregion
@@ -87,6 +100,22 @@ namespace StopHandler.ViewModels
             if (String.IsNullOrEmpty(Message)) return;
             _MyTelegramBot.SendMessageToChat(Message, -1001473601717);
             Message = "";
+        }
+
+        // SendTestMessageToTelegramChatCommand
+        public ICommand SendTestMessageToTelegramChatCommand{ get; }
+        private bool CanSendTestMessageToTelegramChatCommandExecute(object p) => true;
+        private void OnSendTestMessageToTelegramChatCommandExecuted(object p)
+        {
+            StopCommand stopCmd = new StopCommand(
+                12345678, 
+                "Иванов Иван", 
+                "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
+                DateTime.Now,
+                137);
+            //if (String.IsNullOrEmpty(Message)) return;
+            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), -1001473601717);
+            //Message = "";
         }
 
         #endregion
