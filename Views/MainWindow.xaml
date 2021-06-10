@@ -5,16 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         xmlns:l="clr-namespace:StopHandler"
         xmlns:vm="clr-namespace:StopHandler.ViewModels"
-        xmlns:cmd="clr-namespace:StopHandler.Infrastructure.Commands" 
-        
+        xmlns:cmd="clr-namespace:StopHandler.Infrastructure.Commands"
         Title="TimerHandler"
         Height="450" 
         Width="650"
-        Closed="{Binding CloseApplicationCommand}">
+        Closed="Window_Closed">
     
+    <!--
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
+    -->
     
     <DockPanel>
         <TabControl DockPanel.Dock="Top">

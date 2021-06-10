@@ -21,10 +21,6 @@ namespace StopHandler.ViewModels
 
             _MyPOSTServer.Start();
         }
-        ~MainWindowViewModel()
-        {
-            _MyPOSTServer.Stop();
-        }
 
         #region Log
 
@@ -57,6 +53,15 @@ namespace StopHandler.ViewModels
             _MyPOSTServer.Stop();
             (RootObject as Window)?.Close();
             //Application.Current.Shutdown();
+        }
+
+        #endregion
+
+        #region CloseApplication
+
+        public void CloseApplication()
+        {
+            _MyPOSTServer.Stop();
         }
 
         #endregion

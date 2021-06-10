@@ -21,6 +21,29 @@ namespace StopHandler.Models.POST
 
         #endregion
 
+        public POSTServer(int port)
+        {
+            if (port < 48654 || port > 48999)
+            {
+                this.port = 48654;
+                AddLog("ОШИБКА: Не удалось запустить сервер на порту " + port + "! Использован порт по умолчанию (48654).");
+            }
+            else this.port = port;
+
+            listening = new Thread(new ThreadStart(Listen));
+            listener = new TcpListener(IPAddress.Any, port);
+        }
+        public void Start()
+        {
+            isListening = true;
+            listening.Start();
+        }
+        public void Stop()
+        {
+            isListening = false;
+            listener.Stop();
+        }
+
         #region Event UpdateLog
 
         public delegate void UpdateLog(string line);
@@ -49,36 +72,13 @@ namespace StopHandler.Models.POST
 
         #endregion
 
+        #region Listening
+
         TcpListener listener;
         Thread listening;
-
+        private bool isListening = true;
         private int port = 48654;
 
-        public POSTServer(int port)
-        {
-            if (port < 48654 || port > 48999)
-            {
-                this.port = 48654;
-                AddLog("ОШИБКА: Не удалось запустить сервер на порту " + port + "! Использован порт по умолчанию (48654).");
-            }
-            else this.port = port;
-
-            listening = new Thread(new ThreadStart(Listen));
-            listener = new TcpListener(IPAddress.Any, port);
-        }
-        ~POSTServer()
-        {
-            Stop();
-        }
-        public void Start()
-        {
-            listening.Start();
-        }
-        public void Stop()
-        {          
-            listening.Abort();
-            listener.Stop();
-        }
         void Listen()
         {
             try
@@ -88,7 +88,7 @@ namespace StopHandler.Models.POST
                 listener.Start();
                 AddLog("Сервер обработки POST-запросов запущен. Ожидание запросов...");
 
-                while (true)
+                while (isListening)
                 {
                     HandleRequestAsync(listener.AcceptTcpClient());
                 }
@@ -98,6 +98,10 @@ namespace StopHandler.Models.POST
                 AddLog("ОШИБКА: Непредвиденная ошибка в POSTServer.cs/Listen(): " + ex.Message);
             }
         }
+
+        #endregion
+
+        #region HandleRequest
 
         public async void HandleRequestAsync(TcpClient client)
         {
@@ -149,13 +153,15 @@ namespace StopHandler.Models.POST
 
             return strBuilder.ToString();
         }
+
+        #endregion
+
         public void SMTP_OK(NetworkStream stream)
         {
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
             stream.Write(data, 0, data.Length);
         }
         
-
         /* public void SMTP_AlertReqest(int taskNum, int time)
         {
             WebRequest request = WebRequest.Create("https://bankrotforum.planfix.ru/webhook/json/timerAlert");
