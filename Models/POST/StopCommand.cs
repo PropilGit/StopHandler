@@ -57,5 +57,9 @@ namespace StopHandler.Models.POST
             + tags[4] + ": " + Time +"\n"
             + tags[5] + ": " + Spent;
         }
+        public string GenerateMessage()
+        {
+            return "**" +  + "**"
+        }
     }
 }

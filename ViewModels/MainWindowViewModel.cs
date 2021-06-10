@@ -44,7 +44,7 @@ namespace StopHandler.ViewModels
 
         #region POST
 
-            POSTServer InitializePOSTServer()
+        POSTServer InitializePOSTServer()
         {
             POSTServer newPOSTServer = POSTServer.GetInstance();
             newPOSTServer.onLogUpdate += AddLog;
@@ -54,9 +54,15 @@ namespace StopHandler.ViewModels
 
             return newPOSTServer;
         }
+
         void OnPOSTRequest(IPOSTCommand cmd)
         {
-
+            switch (cmd.Identifier)
+            {
+                case "STOP":
+                    ApplyStopCommand(cmd);
+                default:
+            }
         }
 
         #endregion
@@ -73,7 +79,7 @@ namespace StopHandler.ViewModels
             return newTelegramBot;
         }
 
-
+        // SendMessageToTelegramChatCommand
         public ICommand SendMessageToTelegramChatCommand{ get; }
         private bool CanSendMessageToTelegramChatCommandExecute(object p) => true;
         private void OnSendMessageToTelegramChatCommandExecuted(object p)

@@ -16,15 +16,6 @@ namespace StopHandler.Models.Telegram
 {
     class TelegramBot
     {
-        static ITelegramBotClient botClient;
-
-        List<TelegramChannel> chats;
-        string jsonPath = "channels.json";
-
-        public delegate void GetResultFromUser(string result);
-        public event GetResultFromUser onResultReceiving;
-        public bool isActiveRequest = false;
-
         #region Singleton
 
         private static TelegramBot instance;
@@ -36,6 +27,11 @@ namespace StopHandler.Models.Telegram
 
         #endregion
 
+        static ITelegramBotClient botClient;
+
+        List<TelegramChat> chats;
+        string jsonPath = "chats.json";
+
         TelegramBot()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -43,8 +39,8 @@ namespace StopHandler.Models.Telegram
 
             var me = botClient.GetMeAsync().Result;
 
-            chats = JSONConverter.OpenJSONFile<List<TelegramChannel>>(jsonPath);
-            if (chats == null) chats = new List<TelegramChannel>();
+            chats = JSONConverter.OpenJSONFile<List<TelegramChat>>(jsonPath);
+            if (chats == null) chats = new List<TelegramChat>();
 
             botClient.StartReceiving();
         }
@@ -76,7 +72,7 @@ namespace StopHandler.Models.Telegram
                 if (ch.Id == id) return false;
 
                 chats.Add(ch);
-                JSONConverter.SaveJSONFile<List<TelegramChannel>>(chats, jsonPath);
+                JSONConverter.SaveJSONFile<List<TelegramChat>>(chats, jsonPath);
                 return true;
             }
             return false;
@@ -97,21 +93,16 @@ namespace StopHandler.Models.Telegram
 
         #endregion
 
-        public async void Bot_SendAllImageFromHTML(string path)
-        {
-            foreach (var ch in chats)
-            {
-                Message message = await botClient.SendPhotoAsync(
-                     chatId: ch.Id,
-                     photo: path,
-                     caption: "<b>bbbbb</b>. <i>iiiii</i>: <a href=\"https://ya.ru\">link</a>",
-                     parseMode: ParseMode.Html
-                );
-            }
-        }
+    }
+}
 
+/*
 
-        /*
+        public delegate void GetResultFromUser(string result);
+        public event GetResultFromUser onResultReceiving;
+        public bool isActiveRequest = false;
+*/
+/*
         public async void Bot_SendDocument(Captcha captcha)
         { 
             using (Stream fs = new MemoryStream(captcha.image))
@@ -132,61 +123,72 @@ namespace StopHandler.Models.Telegram
                 }
             }
         }
-        */
-
-        #region Получение сообщений
-        /* ===== MESSAGE ==============================================
-        async void Bot_CheckMessage(object sender, MessageEventArgs e)
+*/
+/*
+        public async void Bot_SendAllImageFromHTML(string path)
         {
-            if (e.Message.Text != null)
-            {
-                if (RememberChat(e.Message.Chat.Id))
-                {
-                    await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "Вэлком!");
-                    return;
-                }
-
-                if (isActiveRequest)
-                {
-                    onResultReceiving(e.Message.Text);
-                    isActiveRequest = false;
-                }
-                //await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "");
-            }
-        }
-        */
-        #endregion
-
-        #region CAPTCHA
-        // ===== CAPTCHA ==============================================
-        /*public async void Bot_SendCaptchaAsync(Captcha captcha)
-        {
-            Stream fs = new MemoryStream(captcha.image);
-            InputOnlineFile inputOnlineFile = new InputOnlineFile(fs, captcha.name + ".jpg");
-
-            if (chats == null || chats.Count == 0) return;
-
-            //Telegram.Bot.Types.Message message = await Bot_SendImageAsync(inputOnlineFile);
-            //string file_id = message.Photo.
-            //InputOnlineFile inputOnlineFileId = new InputOnlineFile(file_id);
-
             foreach (var ch in chats)
             {
-                await Bot_SendImageAsync(inputOnlineFile, ch.Id);
+                Message message = await botClient.SendPhotoAsync(
+                     chatId: ch.Id,
+                     photo: path,
+                     caption: "<b>bbbbb</b>. <i>iiiii</i>: <a href=\"https://ya.ru\">link</a>",
+                     parseMode: ParseMode.Html
+                );
             }
-            isActiveRequest = true;
         }
-        */
-        public async Task<Message> Bot_SendImageAsync(InputOnlineFile inputOnlineFile, long chat_id)
+*/
+#region Получение сообщений
+/* ===== MESSAGE ==============================================
+async void Bot_CheckMessage(object sender, MessageEventArgs e)
+{
+    if (e.Message.Text != null)
+    {
+        if (RememberChat(e.Message.Chat.Id))
         {
-            return await botClient.SendPhotoAsync(
-                 chatId: chat_id,
-                 photo: inputOnlineFile,
-                 caption: "<b>CAPTCHA</b>",//. <i></i>: <a href=\"https://ya.ru\">link</a>",
-                 parseMode: ParseMode.Html
-            );
+            await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "Вэлком!");
+            return;
         }
 
-        #endregion
+        if (isActiveRequest)
+        {
+            onResultReceiving(e.Message.Text);
+            isActiveRequest = false;
+        }
+        //await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "");
     }
 }
+*/
+#endregion
+#region CAPTCHA
+// ===== CAPTCHA ==============================================
+/*public async void Bot_SendCaptchaAsync(Captcha captcha)
+{
+    Stream fs = new MemoryStream(captcha.image);
+    InputOnlineFile inputOnlineFile = new InputOnlineFile(fs, captcha.name + ".jpg");
+
+    if (chats == null || chats.Count == 0) return;
+
+    //Telegram.Bot.Types.Message message = await Bot_SendImageAsync(inputOnlineFile);
+    //string file_id = message.Photo.
+    //InputOnlineFile inputOnlineFileId = new InputOnlineFile(file_id);
+
+    foreach (var ch in chats)
+    {
+        await Bot_SendImageAsync(inputOnlineFile, ch.Id);
+    }
+    isActiveRequest = true;
+}
+
+public async Task<Message> Bot_SendImageAsync(InputOnlineFile inputOnlineFile, long chat_id)
+{
+    return await botClient.SendPhotoAsync(
+         chatId: chat_id,
+         photo: inputOnlineFile,
+         caption: "<b>CAPTCHA</b>",//. <i></i>: <a href=\"https://ya.ru\">link</a>",
+         parseMode: ParseMode.Html
+    );
+}
+*/
+
+#endregion

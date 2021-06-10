@@ -4,7 +4,7 @@ using System.Text;
 
 namespace StopHandler.Models.Telegram
 {
-    class TelegramChannel
+    class TelegramChat
     {
         long _Id;
         public long Id { get => _Id; }
@@ -13,7 +13,7 @@ namespace StopHandler.Models.Telegram
         public string Name { get => _Name; set => _Name = value; }
 
 
-        public TelegramChannel(long id, string name)
+        public TelegramChat(long id, string name)
         {
             _Id = id;
             _Name = name;
