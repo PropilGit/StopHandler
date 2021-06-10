@@ -6,6 +6,8 @@ using System.Windows.Input;
 using StopHandler.ViewModels.Base;
 using StopHandler.Models.POST;
 using StopHandler.Models;
+using StopHandler.Models.Telegram;
+using StopHandler.Infrastructure.Commands;
 
 namespace StopHandler.ViewModels
 {
@@ -15,17 +17,17 @@ namespace StopHandler.ViewModels
 
         public MainWindowViewModel()
         {
-            _MyPOSTServer = POSTServer.GetInstance();
-            _MyPOSTServer.onLogUpdate += AddLog;
-            _MyPOSTServer.onPOSTRequest += OnPOSTRequest;
+            _MyPOSTServer = InitializePOSTServer();
+            _MyTelegramBot = InitializeTelegramBot();
 
-            _MyPOSTServer.Start();
+            SendMessageToTelegramChatCommand = new LambdaCommand(OnSendMessageToTelegramChatCommandExecuted, CanSendMessageToTelegramChatCommandExecute);
         }
 
         #region Log
 
         private string _Log = "";
         public string Log { get => _Log; set => Set(ref _Log, value); }
+
         public void AddLog(string msg)
         {
             Log += "[" + DateTime.Now + "] " + msg + "\r\n";
@@ -33,8 +35,25 @@ namespace StopHandler.ViewModels
 
         #endregion
 
-        #region POST Request
+        #region Message
 
+        private string _Message = "009";
+        public string Message { get => _Message; set => Set(ref _Message, value); }
+
+        #endregion
+
+        #region POST
+
+            POSTServer InitializePOSTServer()
+        {
+            POSTServer newPOSTServer = POSTServer.GetInstance();
+            newPOSTServer.onLogUpdate += AddLog;
+            newPOSTServer.onPOSTRequest += OnPOSTRequest;
+
+            newPOSTServer.Start();
+
+            return newPOSTServer;
+        }
         void OnPOSTRequest(IPOSTCommand cmd)
         {
 
@@ -42,22 +61,31 @@ namespace StopHandler.ViewModels
 
         #endregion
 
-        #region CloseApplicationCommand
+        #region Telegram
 
-        public ICommand CloseApplicationCommand { get; }
+        TelegramBot _MyTelegramBot;
 
-        private bool CanCloseApplicationCommandExecute(object p) => true;
-
-        private void OnCloseApplicationCommandExecuted(object p)
+        TelegramBot InitializeTelegramBot()
         {
-            _MyPOSTServer.Stop();
-            (RootObject as Window)?.Close();
-            //Application.Current.Shutdown();
+            TelegramBot newTelegramBot = TelegramBot.GetInstance();
+            newTelegramBot.onLogUpdate += AddLog;
+
+            return newTelegramBot;
+        }
+
+
+        public ICommand SendMessageToTelegramChatCommand{ get; }
+        private bool CanSendMessageToTelegramChatCommandExecute(object p) => true;
+        private void OnSendMessageToTelegramChatCommandExecuted(object p)
+        {
+            if (String.IsNullOrEmpty(Message)) return;
+            _MyTelegramBot.SendMessageToChat(Message, -1001473601717);
+            Message = "";
         }
 
         #endregion
 
-        #region CloseApplication
+        #region Other
 
         public void CloseApplication()
         {
@@ -70,3 +98,25 @@ namespace StopHandler.ViewModels
 
 
 //public string Log { get => controller.Log; set => Set(ref controller.Log, value); }
+/*
+#region CloseApplicationCommand
+
+public ICommand CloseApplicationCommand { get; }
+
+private bool CanCloseApplicationCommandExecute(object p) => true;
+
+private void OnCloseApplicationCommandExecuted(object p)
+{
+    _MyPOSTServer.Stop();
+    (RootObject as Window)?.Close();
+    //Application.Current.Shutdown();
+}
+
+#endregion
+
+
+
+
+
+
+*/

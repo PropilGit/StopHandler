@@ -53,7 +53,23 @@
             </TabItem>
             <TabItem Header="Telegram">
                 <Grid>
-                    <Rectangle Fill="Red"></Rectangle>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"
+                                Margin="10,10,10,10">
+                        <TextBox Width="200"
+                                 Height="200"
+                                 Margin="0,0,0,10"
+                                 Text="{Binding Message}"/>
+                        <Button Content="TEST SEND"
+                                Width="200"
+                                Height="50"
+                                Command="{Binding SendMessageToTelegramChatCommand}">
+
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </TabItem>
             <TabItem Header="Timer">
