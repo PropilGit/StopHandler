@@ -60,12 +60,19 @@
                         <Button Width="200" Height="50" Margin="0,0,0,10"
                                 Content="Отправить сообщение" 
                                 Command="{Binding SendMessageToTelegramChatCommand}"/>
-                        <ComboBox Width="200" Height="25" Margin="0,10,0,10">
+                        <!--ComboBox Width="200" Height="25" Margin="0,10,0,10">
                             <ComboBoxItem IsSelected="True">[БФ] Тех. отдел</ComboBoxItem>
-                        </ComboBox>
+                        </-->
+                        <ComboBox Width="200" Height="25" Margin="0,10,0,10"
+                                  DisplayMemberPath="Name"
+                                  ItemsSource="{Binding Chats}"
+                                  SelectedItem="{Binding SelectedChat}"
+                                  SelectedValue="{Binding SelectedChat}"/>
                         <Button Width="200" Height="50"
                                 Content="Отправить тестовое сообщение"
-                                Command="{Binding SendTestMessageToTelegramChatCommand}"/>
+                                Command="{Binding SendTestMessageToTelegramChatCommand}"
+                                
+                                />
                     </StackPanel>
                     <DockPanel Grid.Column ="1">    
                     </DockPanel>

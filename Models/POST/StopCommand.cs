@@ -10,30 +10,30 @@ namespace StopHandler.Models.POST
         CMD#STOP#CMD
         TASK#121574#TASK
         WRK#Путин Владимир#WRK
-        REP#Однажды, в студеную зимнюю пору, 
-        Я из лесу вышел; был сильный мороз. 
-        Гляжу, поднимается медленно в гору 
-        Лошадка, везущая хворосту воз.#REP
-        TIME#20-01-2021 14:48#TIME
-        SPENT#47#SPENT
+        REP#Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз.#REP
+        STR#20-01-2021 14:48#STR
+        STP#20-01-2021 14:59#STP
+        CHAT#ТО#CHAT
         */
         public string[] Tags { get => tags; }
-        public static string[] tags = new string[6] {"CMD", "TASK", "WRK", "REP", "TIME", "SPENT"};
+        public static readonly string[] tags = new string[7] {"CMD", "TASK", "WRK", "REP", "STR", "STP", "CHAT"};
         public string Identifier { get => identifier; }
-        public static string identifier = "STOP";
+        public static readonly string identifier = "STOP";
         public int TaskNum { get; private set; }
         public string Worker { get; private set; }
         public string Report { get; private set; }
-        public DateTime Time { get; private set; }
-        public float Spent { get; private set; }
+        public DateTime Start { get; private set; }
+        public DateTime Stop { get; private set; }
+        public string Chat { get; private set; }
 
-        public StopCommand(int taskNum, string worker, string report, DateTime time, int spent)
+        public StopCommand(int taskNum, string worker, string report, DateTime start, DateTime stop, string chat)
         {
             Worker = worker;
             Report = report;
             TaskNum = taskNum;
-            Time = time;
-            Spent = spent;
+            Start = start;
+            Stop = stop;
+            Chat = chat;
         }
         public static StopCommand Instantiate(string[] values)
         {
@@ -41,7 +41,7 @@ namespace StopHandler.Models.POST
             {
                 try
                 {
-                    return new StopCommand(Int32.Parse(values[1]), values[2], values[3], DateTime.Parse(values[4]), Int32.Parse(values[5]));
+                    return new StopCommand(Int32.Parse(values[1]), values[2], values[3], DateTime.Parse(values[4]), DateTime.Parse(values[5]), values[6]);
                 }
                 catch (Exception)
                 {
@@ -57,13 +57,14 @@ namespace StopHandler.Models.POST
                 + tags[1] + ": " + TaskNum + "\n"
                 + tags[2] + ": " + Worker +"\n"
                 + tags[3] + ": " + Report +"\n"
-                + tags[4] + ": " + Time +"\n"
-                + tags[5] + ": " + Spent;
+                + tags[4] + ": " + Start +"\n"
+                + tags[5] + ": " + Stop +"\n"
+                + tags[6] + ": " + Chat;
         }
         public string GenerateMessage()
         {
             return "<b>" + Worker + "</b>\n"
-                + "<a href='https://bankrotforum.planfix.ru/task/" + TaskNum + "'>#" + TaskNum + "</a>" + " <i>(" + Math.Round(Spent / 60, 1) + " ч.)</i>\n"
+                + "<a href='https://bankrotforum.planfix.ru/task/" + TaskNum + "'>#" + TaskNum + "</a>\n"// + " <i>(" + Math.Round(Spent / 60, 1) + " ч.)</i>\n"
                 + Report + "\n";
         }
     }

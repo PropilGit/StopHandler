@@ -7,7 +7,7 @@ using System.Xaml;
 
 namespace StopHandler.ViewModels.Base
 {
-    internal abstract class ViewModel : MarkupExtension, INotifyPropertyChanged, IDisposable
+    internal abstract class ViewModel : INotifyPropertyChanged, IDisposable//, MarkupExtension
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -35,6 +35,7 @@ namespace StopHandler.ViewModels.Base
             return true;
         }
 
+        /*
         public override object ProvideValue(IServiceProvider sp)
         {
             var value_target_service = sp.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
@@ -48,11 +49,11 @@ namespace StopHandler.ViewModels.Base
             return this;
         }
 
+        
         private WeakReference _TargetRef;
         private WeakReference _RootRef;
 
         public object TargetObject => _TargetRef.Target;
-
         public object RootObject => _RootRef.Target;
 
         protected virtual void OnInitialized(object Target, object Property, object Root)
@@ -60,7 +61,7 @@ namespace StopHandler.ViewModels.Base
             _TargetRef = new WeakReference(Target);
             _RootRef = new WeakReference(Root);
         }
-
+        */
         //~ViewModel()
         //{
         //    Dispose(false);
@@ -78,5 +79,6 @@ namespace StopHandler.ViewModels.Base
             _Disposed = true;
             // Освобождение управляемых ресурсов
         }
+        
     }
 }

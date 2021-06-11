@@ -10,7 +10,7 @@ namespace StopHandler.Models.POST
         public string Identifier { get; }
         public string Worker { get; }
         public int TaskNum { get; }
-        public DateTime Time { get; }
+        //public DateTime  { get; }
 
         public static StopCommand Instantiate(string[] values)
         {

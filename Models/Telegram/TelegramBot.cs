@@ -29,18 +29,12 @@ namespace StopHandler.Models.Telegram
 
         static ITelegramBotClient botClient;
 
-        List<TelegramChat> chats;
-        string jsonPath = "chats.json";
-
         TelegramBot()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             botClient = new TelegramBotClient("1836506779:AAE9nUXbBCry6M05hD_YzR_O-yS37m29rJ0");
 
             var me = botClient.GetMeAsync().Result;
-
-            chats = JSONConverter.OpenJSONFile<List<TelegramChat>>(jsonPath);
-            if (chats == null) chats = new List<TelegramChat>();
 
             botClient.StartReceiving();
         }
@@ -59,23 +53,6 @@ namespace StopHandler.Models.Telegram
             {
                 onLogUpdate(msg);
             }
-        }
-
-        #endregion
-
-        #region Операции с чатами
-        bool RememberChat(long id)
-        {
-            if (chats == null || chats.Count == 0) return false;
-            foreach (var ch in chats)
-            {
-                if (ch.Id == id) return false;
-
-                chats.Add(ch);
-                JSONConverter.SaveJSONFile<List<TelegramChat>>(chats, jsonPath);
-                return true;
-            }
-            return false;
         }
 
         #endregion
@@ -138,6 +115,23 @@ namespace StopHandler.Models.Telegram
             }
         }
 */
+#region Операции с чатами
+    /*
+bool RememberChat(long id)
+{
+    if (chats == null || chats.Count == 0) return false;
+    foreach (var ch in chats)
+    {
+        if (ch.Id == id) return false;
+
+        chats.Add(ch);
+        JSONConverter.SaveJSONFile<List<TelegramChat>>(chats, jsonPath);
+        return true;
+    }
+    return false;
+}
+*/
+#endregion
 #region Получение сообщений
 /* ===== MESSAGE ==============================================
 async void Bot_CheckMessage(object sender, MessageEventArgs e)

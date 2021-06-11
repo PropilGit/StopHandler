@@ -11,12 +11,15 @@ namespace StopHandler.Models.Telegram
 
         string _Name;
         public string Name { get => _Name; set => _Name = value; }
+        
+        string _Tag;
+        public string Tag { get => _Tag; set => _Tag = value; }
 
-
-        public TelegramChat(long id, string name)
+        public TelegramChat(long id, string name, string tag)
         {
             _Id = id;
             _Name = name;
+            _Tag = tag;
         }
     }
 }

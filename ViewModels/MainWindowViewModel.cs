@@ -8,13 +8,12 @@ using StopHandler.Models.POST;
 using StopHandler.Models;
 using StopHandler.Models.Telegram;
 using StopHandler.Infrastructure.Commands;
+using StopHandler.Infrastructure.Files;
 
 namespace StopHandler.ViewModels
 {
     class MainWindowViewModel : ViewModel
     {
-        POSTServer _MyPOSTServer;
-
         public MainWindowViewModel()
         {
             _MyPOSTServer = InitializePOSTServer();
@@ -27,6 +26,10 @@ namespace StopHandler.ViewModels
             SendTestMessageToTelegramChatCommand = new LambdaCommand(
                 OnSendTestMessageToTelegramChatCommandExecuted,
                 CanSendTestMessageToTelegramChatCommandExecute);
+
+            //SelectedChatChangedCommand = new LambdaCommand(
+            //    OnSelectedChatChangedCommandExecuted,
+            //    CanSelectedChatChangedCommandExecute);
         }
 
         #region Log
@@ -48,7 +51,29 @@ namespace StopHandler.ViewModels
 
         #endregion
 
+        #region Chats
+
+        private List<TelegramChat> _Chats;
+        public List<TelegramChat> Chats { get => _Chats; set => Set(ref _Chats, value); }
+
+
+        private TelegramChat _SelectedChat;
+        public TelegramChat SelectedChat { get => _SelectedChat; set => Set(ref _SelectedChat, value); }
+
+        long GetChatId(string tag = "error")
+        {
+            foreach (var ch in _Chats)
+            {
+                if (ch.Tag == tag) return ch.Id;
+            }
+            return 0;
+        }
+
+        #endregion
+
         #region POST
+
+        POSTServer _MyPOSTServer;
 
         POSTServer InitializePOSTServer()
         {
@@ -63,31 +88,30 @@ namespace StopHandler.ViewModels
 
         void OnPOSTRequest(IPOSTCommand cmd)
         {
-            switch (cmd.Identifier)
-            {
-                case "STOP":
-                    ApplyStopCommand((StopCommand)cmd, -1001473601717);
-                    break;
-                default:
-                    break;
-            }
+            if(cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
         }
 
-        void ApplyStopCommand(StopCommand stopCmd, long chatId)
+        void ApplyStopCommand(StopCommand stopCmd)
         {
-            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chatId);
+            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId(stopCmd.Chat));
         }
 
         #endregion
 
         #region Telegram
 
+        //Переменные
         TelegramBot _MyTelegramBot;
+        string jsonPath = "chats.json";
 
         TelegramBot InitializeTelegramBot()
         {
             TelegramBot newTelegramBot = TelegramBot.GetInstance();
             newTelegramBot.onLogUpdate += AddLog;
+
+            _Chats = JSONConverter.OpenJSONFile<List<TelegramChat>>(jsonPath);
+            if (_Chats == null || _Chats.Count == 0) _Chats = new List<TelegramChat>();
+            else _SelectedChat = _Chats[0];
 
             return newTelegramBot;
         }
@@ -98,7 +122,7 @@ namespace StopHandler.ViewModels
         private void OnSendMessageToTelegramChatCommandExecuted(object p)
         {
             if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(Message, -1001473601717);
+            _MyTelegramBot.SendMessageToChat(Message, _SelectedChat.Id);
             Message = "";
         }
 
@@ -111,10 +135,11 @@ namespace StopHandler.ViewModels
                 12345678, 
                 "Иванов Иван", 
                 "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
+                DateTime.Now.AddMinutes(5),
                 DateTime.Now,
-                137);
+                "TO");
             //if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), -1001473601717);
+            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
             //Message = "";
         }
 
