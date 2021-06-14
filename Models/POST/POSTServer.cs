@@ -103,6 +103,8 @@ namespace StopHandler.Models.POST
 
         #region HandleRequest
 
+        bool debug = true;
+
         public async void HandleRequestAsync(TcpClient client)
         {
             await Task.Run(() => HandleRequest(client));
@@ -111,7 +113,9 @@ namespace StopHandler.Models.POST
         {
             NetworkStream stream = client.GetStream();
             string post = RecieveDataToString(stream);
-            
+
+            //debug
+            if(debug) AddLog(post);
             try
             {
                 if (post.Substring(0, 4) == "POST")
@@ -120,7 +124,9 @@ namespace StopHandler.Models.POST
                     if (cmd != null)
                     {
                         POSTRequest(cmd);
-                        AddLog(cmd.ToLog());
+
+                        //debug
+                        if (debug) AddLog(cmd.ToLog());
                     }
                     else
                     {
