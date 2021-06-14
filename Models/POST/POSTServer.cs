@@ -103,7 +103,7 @@ namespace StopHandler.Models.POST
 
         #region HandleRequest
 
-        bool debug = true;
+        bool debug = false;
 
         public async void HandleRequestAsync(TcpClient client)
         {
