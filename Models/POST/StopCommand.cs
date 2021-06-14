@@ -64,7 +64,7 @@ namespace StopHandler.Models.POST
         public string GenerateMessage()
         {
             return "<b>" + Worker + "</b>\n"
-                + "<a href='https://bankrotforum.planfix.ru/task/" + TaskNum + "'>#" + TaskNum + "</a>\n"// + " <i>(" + Math.Round(Spent / 60, 1) + " ч.)</i>\n"
+                + "<a href='https://bankrotforum.planfix.ru/task/" + TaskNum + "'>#" + TaskNum + "</a> " + " <i>(" + Math.Round((Stop - Start).TotalHours, 1) + " ч.)</i>\n"
                 + Report + "\n";
         }
     }
