@@ -135,8 +135,8 @@ namespace StopHandler.ViewModels
                 12345678, 
                 "Иванов Иван", 
                 "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
-                DateTime.Now.AddMinutes(5),
                 DateTime.Now,
+                DateTime.Now.AddMinutes(5),
                 "TO");
             //if (String.IsNullOrEmpty(Message)) return;
             _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);

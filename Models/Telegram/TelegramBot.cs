@@ -32,7 +32,8 @@ namespace StopHandler.Models.Telegram
         TelegramBot()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            botClient = new TelegramBotClient("1836506779:AAE9nUXbBCry6M05hD_YzR_O-yS37m29rJ0");
+            string token = JSONConverter.OpenJSONFile<string>("token.json");
+            botClient = new TelegramBotClient(token);
 
             var me = botClient.GetMeAsync().Result;
 
