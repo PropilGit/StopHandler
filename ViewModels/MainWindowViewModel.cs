@@ -53,6 +53,8 @@ namespace StopHandler.ViewModels
 
         #region Chats
 
+        long debugChat = -1001320796606;
+
         private List<TelegramChat> _Chats;
         public List<TelegramChat> Chats { get => _Chats; set => Set(ref _Chats, value); }
 
@@ -66,7 +68,7 @@ namespace StopHandler.ViewModels
             {
                 if (ch.Tag == tag) return ch.Id;
             }
-            return 0;
+            return debugChat;
         }
 
         #endregion
