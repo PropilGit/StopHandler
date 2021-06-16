@@ -16,6 +16,8 @@ namespace StopHandler.Models.Telegram
 {
     class TelegramBot
     {
+        long debugCh = -1001320796606;
+
         #region Singleton
 
         private static TelegramBot instance;
@@ -61,14 +63,26 @@ namespace StopHandler.Models.Telegram
         #region Отправка сообщений
         public async void SendMessageToChat(string msg, long chatId)
         {
-            await botClient.SendTextMessageAsync(
+            try
+            {
+                await botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: msg,
-                parseMode: ParseMode.Html,
+                parseMode: ParseMode.Markdown,
                 disableNotification: true);
+            }
+            catch (System.Exception ex)
+            {
+                AddLog("ОШИБКА: " + ex.Message);
+                await botClient.SendTextMessageAsync(
+                chatId: debugCh,
+                text: ex.Message,
+                parseMode: ParseMode.Markdown,
+                disableNotification: true);
+            }
+
+            
         }
-
-
         #endregion
 
     }

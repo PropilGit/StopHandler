@@ -12,6 +12,7 @@ namespace StopHandler.Models.POST
         WRK#Иванов Иван#WRK
         TIME#20-01-2021 14:48#TIME
         */
+
         public string[] Tags { get => tags; }
         public static string[] tags = new string[4] { "CMD", "TASK", "WRK", "STR" };
         public string Identifier { get => identifier; }
