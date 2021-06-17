@@ -16,6 +16,5 @@ namespace StopHandler.Models.POST
         {
             return null;
         }
-        public string ToLog();
     }
 }

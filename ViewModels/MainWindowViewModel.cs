@@ -91,11 +91,17 @@ namespace StopHandler.ViewModels
         void OnPOSTRequest(IPOSTCommand cmd)
         {
             if(cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
+            else ApplyErrorCommand((ErrorCommand)cmd);
+
         }
 
         void ApplyStopCommand(StopCommand stopCmd)
         {
             _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId(stopCmd.Chat));
+        }
+        void ApplyErrorCommand(ErrorCommand errCmd)
+        {
+            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(errCmd.Chat));
         }
 
         #endregion
@@ -139,7 +145,7 @@ namespace StopHandler.ViewModels
                 "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
                 DateTime.Now,
                 DateTime.Now.AddMinutes(5),
-                "TO");
+                "TEST");
             //if (String.IsNullOrEmpty(Message)) return;
             _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
             //Message = "";

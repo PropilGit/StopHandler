@@ -124,19 +124,18 @@ namespace StopHandler.Models.POST
                     if (cmd != null)
                     {
                         POSTRequest(cmd);
-
-                        //debug
-                        if (debug) AddLog(cmd.ToLog());
                     }
                     else
                     {
                         AddLog("Полученный POST-запрос не соответствует критериям");
+                        POSTRequest(new ErrorCommand(post));
                     }
                 }  
             }
             catch (Exception ex)
             {
                 AddLog("ОШИБКА: Ошибка при чтении POST-запроса: " + ex.Message);
+                POSTRequest(new ErrorCommand(post));
             }
             finally
             {
