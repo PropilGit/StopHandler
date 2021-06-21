@@ -97,6 +97,7 @@ namespace StopHandler.ViewModels
 
         void ApplyStopCommand(StopCommand stopCmd)
         {
+            if(stopCmd.Chat != "ТЕСТ" && stopCmd.Chat != "БФ") _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("БФ"));
             _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId(stopCmd.Chat));
         }
         void ApplyErrorCommand(ErrorCommand errCmd)
