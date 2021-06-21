@@ -26,10 +26,6 @@ namespace StopHandler.ViewModels
             SendTestMessageToTelegramChatCommand = new LambdaCommand(
                 OnSendTestMessageToTelegramChatCommandExecuted,
                 CanSendTestMessageToTelegramChatCommandExecute);
-
-            //SelectedChatChangedCommand = new LambdaCommand(
-            //    OnSelectedChatChangedCommandExecuted,
-            //    CanSelectedChatChangedCommandExecute);
         }
 
         #region Log

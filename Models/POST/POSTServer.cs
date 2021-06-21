@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -112,7 +113,7 @@ namespace StopHandler.Models.POST
         void HandleRequest(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
-            string post = RecieveDataToString(stream);
+            string post = RecieveDataToString_SR(stream);
 
             //debug
             if(debug) AddLog(post);
@@ -145,7 +146,7 @@ namespace StopHandler.Models.POST
                 client.Close();
             }
         }
-        string RecieveDataToString(NetworkStream stream)
+        string RecieveDataToString_SB(NetworkStream stream)
         {
             byte[] data = new byte[256];
             StringBuilder strBuilder = new StringBuilder();
@@ -158,7 +159,19 @@ namespace StopHandler.Models.POST
 
             return strBuilder.ToString();
         }
+        string RecieveDataToString_SR(NetworkStream stream)
+        {
+            string result = "";
+            StreamReader reader = new StreamReader(stream);
+            do
+            {
+                string message = reader.ReadLine();
+                if (!string.IsNullOrEmpty(message)) result += message;
+            }
+            while (!reader.EndOfStream);
 
+            return result;
+        }
         #endregion
 
         public void SMTP_OK(NetworkStream stream)
