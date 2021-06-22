@@ -146,17 +146,21 @@ namespace StopHandler.Models.POST
         }
         string RecieveDataToString_SB(NetworkStream stream)
         {
-            byte[] data = new byte[10240];
+            int buffer = 256;
+            int maxCounter = 40;
+
             int counter = 0;
+            byte[] data = new byte[buffer * maxCounter];
+            
             do
             {
-                int bytes = stream.Read(data, counter * 1024, 1024);
+                int bytes = stream.Read(data, counter * buffer, buffer);
                 counter++;
             }
-            while (stream.DataAvailable && counter < 10);
+            while (stream.DataAvailable && counter < maxCounter);
 
             StringBuilder strBuilder = new StringBuilder();
-            strBuilder.Append(Encoding.UTF8.GetString(data, 0, 1024 * counter));
+            strBuilder.Append(Encoding.UTF8.GetString(data, 0, buffer * counter));
             return strBuilder.ToString();
         }
         #endregion
