@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -113,7 +111,7 @@ namespace StopHandler.Models.POST
         void HandleRequest(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
-            string post = RecieveDataToString_SR(stream);
+            string post = RecieveDataToString_SB(stream);
 
             //debug
             if(debug) AddLog(post);
@@ -148,32 +146,20 @@ namespace StopHandler.Models.POST
         }
         string RecieveDataToString_SB(NetworkStream stream)
         {
-            byte[] data = new byte[256];
-            StringBuilder strBuilder = new StringBuilder();
+            byte[] data = new byte[10240];
+            int counter = 0;
             do
             {
-                int bytes = stream.Read(data, 0, data.Length);
-                strBuilder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+                int bytes = stream.Read(data, counter * 1024, 1024);
+                counter++;
             }
-            while (stream.DataAvailable);
+            while (stream.DataAvailable && counter < 10);
 
+            StringBuilder strBuilder = new StringBuilder();
+            strBuilder.Append(Encoding.UTF8.GetString(data, 0, 1024 * counter));
             return strBuilder.ToString();
         }
-        string RecieveDataToString_SR(NetworkStream stream)
-        {
-            string result = "";
-            StreamReader reader = new StreamReader(stream);
-            do
-            {
-                string message = reader.ReadLine();
-                if (!string.IsNullOrEmpty(message)) result += message;
-            }
-            while (!reader.EndOfStream);
-
-            return result;
-        }
         #endregion
-
         public void SMTP_OK(NetworkStream stream)
         {
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
@@ -199,4 +185,27 @@ namespace StopHandler.Models.POST
                 dataStream.Write(byteArray, 0, byteArray.Length);
             }
         }
+string RecieveDataToString(NetworkStream stream)
+        {
+            var bytes = GetBytes(stream, 1024);
+            byte[] result = new byte[byt];
+            foreach (var bytes in )
+            {
+                
+            }
+            return result;
+        }
+
+        IEnumerable<byte[]> GetBytes(NetworkStream stream, int bufferValue)
+        {
+            int counter = 1000;
+            byte[] buffer = new byte[bufferValue];
+            while (stream.DataAvailable && counter > 0)
+            {
+                counter--;
+                int bytes = stream.Read(buffer, 0, buffer.Length);
+                yield return buffer;
+            }
+        }
+        
 */

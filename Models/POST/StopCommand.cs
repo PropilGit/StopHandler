@@ -13,7 +13,7 @@ namespace StopHandler.Models.POST
         REP#Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз.#REP
         STR#20-01-2021 14:48#STR
         STP#20-01-2021 14:59#STP
-        CHAT#ТО#CHAT
+        CHAT#ТЕСТ#CHAT
         */
         public string[] Tags { get => tags; }
         public static readonly string[] tags = new string[7] {"CMD", "TASK", "WRK", "REP", "STR", "STP", "CHAT"};
