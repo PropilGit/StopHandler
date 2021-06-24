@@ -6,5 +6,8 @@ namespace StopHandler.Models.Alert
 {
     class AlertTask
     {
+        string WorkerName;
+        int TaskNum;
+        DateTime StartDate;
     }
 }
