@@ -10,6 +10,7 @@ using StopHandler.Models.Telegram;
 using StopHandler.Infrastructure.Commands;
 using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 
 namespace StopHandler.ViewModels
 {
@@ -98,30 +99,33 @@ namespace StopHandler.ViewModels
 
         string PFUsersPath = "PlanFixUsers.json";
 
-        private ICollection<PlanFixUser> _PFUsers;
-        public ICollection<PlanFixUser> PFUsers { get => _PFUsers; set => Set(ref _PFUsers, value); }
+        private ObservableCollection<PlanFixUser> _PFUsers;
+        public ObservableCollection<PlanFixUser> PFUsers { get => _PFUsers; set => Set(ref _PFUsers, value); }
 
         void LoadPFUsersList()
         {
-            _PFUsers = JSONConverter.OpenJSONFile<ObservableCollection<PlanFixUser>>(PFUsersPath);
-            if (_PFUsers == null || _PFUsers.Count == 0)
+            PFUsers = JSONConverter.OpenJSONFile<ObservableCollection<PlanFixUser>>(PFUsersPath);
+            if (PFUsers == null || PFUsers.Count == 0)
             {
-                _PFUsers = new ObservableCollection<PlanFixUser>();
+                PFUsers = new ObservableCollection<PlanFixUser>();
                 AddLog("Ошибка загрузки списка пользователей ПланФикса", true);
             }
         }
 
         bool UpdatePFUserList(string newUserName)
         {
-            foreach (var pfu in _PFUsers)
+            foreach (var pfu in PFUsers)
             {
                 //элемент есть в списке
                 if (pfu.Name == newUserName) return true;                
             }
-            //Если элемента в списке нет
-            //Добавляем нового пользователя и сохраняем список
-            PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName));
-            if (JSONConverter.SaveJSONFile<ICollection<PlanFixUser>>(_PFUsers, PFUsersPath)) return true;
+
+            App.Current.Dispatcher.Invoke((Action)delegate 
+            {
+                PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName));
+            });
+
+            if (JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath)) return true;
             else
             {
                 AddLog("Не удалось сохранить обновленный список пользователей планФикса", true);

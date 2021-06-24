@@ -164,6 +164,7 @@ namespace StopHandler.Models.POST
             return strBuilder.ToString();
         }
         #endregion
+
         public void SMTP_OK(NetworkStream stream)
         {
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");

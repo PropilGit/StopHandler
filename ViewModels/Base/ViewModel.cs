@@ -13,8 +13,8 @@ namespace StopHandler.ViewModels.Base
 
         protected virtual void OnPropertyChanged([CallerMemberName] string PropertyName = null)
         {
-            //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
-            var handlers = PropertyChanged;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+            /*var handlers = PropertyChanged;
             if (handlers is null) return;
 
             var invocation_list = handlers.GetInvocationList();
@@ -24,7 +24,7 @@ namespace StopHandler.ViewModels.Base
                 if (action.Target is DispatcherObject disp_object)
                     disp_object.Dispatcher.Invoke(action, this, arg);
                 else
-                    action.DynamicInvoke(this, arg);
+                    action.DynamicInvoke(this, arg);*/
         }
 
         protected virtual bool Set<T>(ref T field, T value, [CallerMemberName] string PropertyName = null)
