@@ -28,9 +28,9 @@ namespace StopHandler.Models.POST
 
         public StopCommand(int taskNum, string worker, string report, DateTime start, DateTime stop, string chat)
         {
-            Worker = worker;
-            Report = report;
             TaskNum = taskNum;
+            Worker = worker;
+            Report = report;          
             Start = start;
             Stop = stop;
             Chat = chat;

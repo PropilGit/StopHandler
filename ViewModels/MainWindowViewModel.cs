@@ -9,6 +9,7 @@ using StopHandler.Models;
 using StopHandler.Models.Telegram;
 using StopHandler.Infrastructure.Commands;
 using StopHandler.Infrastructure.Files;
+using System.Collections.ObjectModel;
 
 namespace StopHandler.ViewModels
 {
@@ -18,14 +19,11 @@ namespace StopHandler.ViewModels
         {
             _MyPOSTServer = InitializePOSTServer();
             _MyTelegramBot = InitializeTelegramBot();
+            LoadChatsList();
+            LoadPFUsersList();
 
-            SendMessageToTelegramChatCommand = new LambdaCommand(
-                OnSendMessageToTelegramChatCommandExecuted, 
-                CanSendMessageToTelegramChatCommandExecute);
-
-            SendTestMessageToTelegramChatCommand = new LambdaCommand(
-                OnSendTestMessageToTelegramChatCommandExecuted,
-                CanSendTestMessageToTelegramChatCommandExecute);
+            SendMessageToTelegramChatCommand = new LambdaCommand(OnSendMessageToTelegramChatCommandExecuted, CanSendMessageToTelegramChatCommandExecute);
+            SendTestMessageToTelegramChatCommand = new LambdaCommand(OnSendTestMessageToTelegramChatCommandExecuted,CanSendTestMessageToTelegramChatCommandExecute);
         }
 
         #region Log
@@ -33,9 +31,13 @@ namespace StopHandler.ViewModels
         private string _Log = "";
         public string Log { get => _Log; set => Set(ref _Log, value); }
 
-        public void AddLog(string msg)
+        public void AddLog(string msg, bool isError = false)
         {
             Log += "[" + DateTime.Now + "] " + msg + "\r\n";
+            if (isError)
+            {
+                _MyTelegramBot.SendMessageToChat(msg, GetChatId(debugChat.Tag));
+            }
         }
 
         #endregion
@@ -49,15 +51,26 @@ namespace StopHandler.ViewModels
 
         #region Chats
 
-        //long debugChat = -1001320796606;
+        TelegramChat debugChat = new TelegramChat(-1001320796606, "[БФ]Debug", "#DBG");
+        string chatsPath = "chats.json";
 
         private List<TelegramChat> _Chats;
         public List<TelegramChat> Chats { get => _Chats; set => Set(ref _Chats, value); }
 
-
         private TelegramChat _SelectedChat;
         public TelegramChat SelectedChat { get => _SelectedChat; set => Set(ref _SelectedChat, value); }
 
+        void LoadChatsList()
+        {
+            _Chats = JSONConverter.OpenJSONFile<List<TelegramChat>>(chatsPath);
+            if (_Chats == null || _Chats.Count == 0)
+            {
+                _Chats = new List<TelegramChat>();
+                _Chats.Add(debugChat);
+                AddLog("Ошибка загрузки списка чатов.", true);
+            }
+            _SelectedChat = _Chats[0];
+        }
         List<long> GetChatsIdFromString(string tags = "error")
         {
             List<long> result = new List<long>();
@@ -66,18 +79,54 @@ namespace StopHandler.ViewModels
                 if (tags.IndexOf(ch.Tag) != -1) result.Add(ch.Id);
             }
 
-            if (result == null || result.Count < 1) result.Add(GetChatId("#DBG"));
+            if (result == null || result.Count < 1) result.Add(GetChatId(debugChat.Tag));
 
             return result;
         }
-
         long GetChatId(string tag = "error")
         {
             foreach (var ch in _Chats)
             {
                 if (tag.IndexOf(ch.Tag) != -1) return ch.Id;
             }
-            return GetChatId("#DBG");
+            return GetChatId(debugChat.Tag);
+        }
+
+        #endregion
+
+        #region PlanFixUsers
+
+        string PFUsersPath = "PlanFixUsers.json";
+
+        private ICollection<PlanFixUser> _PFUsers;
+        public ICollection<PlanFixUser> PFUsers { get => _PFUsers; set => Set(ref _PFUsers, value); }
+
+        void LoadPFUsersList()
+        {
+            _PFUsers = JSONConverter.OpenJSONFile<ObservableCollection<PlanFixUser>>(PFUsersPath);
+            if (_PFUsers == null || _PFUsers.Count == 0)
+            {
+                _PFUsers = new ObservableCollection<PlanFixUser>();
+                AddLog("Ошибка загрузки списка пользователей ПланФикса", true);
+            }
+        }
+
+        bool UpdatePFUserList(string newUserName)
+        {
+            foreach (var pfu in _PFUsers)
+            {
+                //элемент есть в списке
+                if (pfu.Name == newUserName) return true;                
+            }
+            //Если элемента в списке нет
+            //Добавляем нового пользователя и сохраняем список
+            PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName));
+            if (JSONConverter.SaveJSONFile<ICollection<PlanFixUser>>(_PFUsers, PFUsersPath)) return true;
+            else
+            {
+                AddLog("Не удалось сохранить обновленный список пользователей планФикса", true);
+                return true;
+            }
         }
 
         #endregion
@@ -99,6 +148,7 @@ namespace StopHandler.ViewModels
 
         void OnPOSTRequest(IPOSTCommand cmd)
         {
+            UpdatePFUserList(cmd.Worker);
             if(cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
             else ApplyErrorCommand((ErrorCommand)cmd);
 
@@ -106,7 +156,7 @@ namespace StopHandler.ViewModels
 
         void ApplyStopCommand(StopCommand stopCmd)
         {
-            if(stopCmd.Chat.IndexOf("#DBG") != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+            if(stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
             foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
             {
                 _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
@@ -115,7 +165,7 @@ namespace StopHandler.ViewModels
         }
         void ApplyErrorCommand(ErrorCommand errCmd)
         {
-            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId("#DBG"));
+            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
         }
 
         #endregion
@@ -124,16 +174,11 @@ namespace StopHandler.ViewModels
 
         //Переменные
         TelegramBot _MyTelegramBot;
-        string jsonPath = "chats.json";
 
         TelegramBot InitializeTelegramBot()
         {
             TelegramBot newTelegramBot = TelegramBot.GetInstance();
             newTelegramBot.onLogUpdate += AddLog;
-
-            _Chats = JSONConverter.OpenJSONFile<List<TelegramChat>>(jsonPath);
-            if (_Chats == null || _Chats.Count == 0) _Chats = new List<TelegramChat>();
-            else _SelectedChat = _Chats[0];
 
             return newTelegramBot;
         }
@@ -195,10 +240,5 @@ private void OnCloseApplicationCommandExecuted(object p)
 }
 
 #endregion
-
-
-
-
-
 
 */

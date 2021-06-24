@@ -11,7 +11,7 @@ namespace StopHandler.Models.POST
         public static readonly string identifier = "ERROR";
         public int TaskNum { get => 0; }
         public string Worker { get => "ERROR"; }
-        public string Chat { get => "TEST"; }
+        public string Chat { get => "#DBG"; }
         public string Message { get; private set; }
 
         public ErrorCommand(string message)

@@ -45,13 +45,13 @@ namespace StopHandler.Models.POST
 
         #region Event UpdateLog
 
-        public delegate void UpdateLog(string line);
+        public delegate void UpdateLog(string msg, bool isError = false);
         public event UpdateLog onLogUpdate;
-        void AddLog(string msg)
+        void AddLog(string msg, bool isError = false)
         {
             if (onLogUpdate != null)
             {
-                onLogUpdate(msg);
+                onLogUpdate(msg, isError);
             }
         }
 

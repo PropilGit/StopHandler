@@ -16,7 +16,6 @@ namespace StopHandler.Models.Telegram
 {
     class TelegramBot
     {
-        long debugCh = -1001320796606;
 
         #region Singleton
 
@@ -46,15 +45,15 @@ namespace StopHandler.Models.Telegram
             botClient.StopReceiving();
         }
 
-        #region Event UpdateLog
+        #region UpdateLog
 
-        public delegate void UpdateLog(string line);
+        public delegate void UpdateLog(string msg, bool isError = false);
         public event UpdateLog onLogUpdate;
-        void AddLog(string msg)
+        void AddLog(string msg, bool isError = false)
         {
             if (onLogUpdate != null)
             {
-                onLogUpdate(msg);
+                onLogUpdate(msg, isError);
             }
         }
 
@@ -73,15 +72,9 @@ namespace StopHandler.Models.Telegram
             }
             catch (System.Exception ex)
             {
-                AddLog("ОШИБКА: " + ex.Message);
-                await botClient.SendTextMessageAsync(
-                chatId: debugCh,
-                text: ex.Message,
-                parseMode: ParseMode.Markdown,
-                disableNotification: true);
+                AddLog("ОШИБКА: " + ex.Message, true);
             }
-
-            
+          
         }
         #endregion
 

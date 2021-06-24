@@ -25,7 +25,9 @@
                         <ColumnDefinition Width="500*"/>
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid Grid.Column="0">
+                    
+                    <DataGrid Grid.Column="0"
+                              ItemsSource="{Binding PFUsers}">
                         
                     </DataGrid>
                     <WrapPanel Grid.Column="1" Margin="10,10,10,10" Orientation="Vertical" ItemWidth="130">
