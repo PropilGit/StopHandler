@@ -49,7 +49,7 @@ namespace StopHandler.ViewModels
 
         #region Chats
 
-        long debugChat = -1001320796606;
+        //long debugChat = -1001320796606;
 
         private List<TelegramChat> _Chats;
         public List<TelegramChat> Chats { get => _Chats; set => Set(ref _Chats, value); }
@@ -58,13 +58,26 @@ namespace StopHandler.ViewModels
         private TelegramChat _SelectedChat;
         public TelegramChat SelectedChat { get => _SelectedChat; set => Set(ref _SelectedChat, value); }
 
+        List<long> GetChatsIdFromString(string tags = "error")
+        {
+            List<long> result = new List<long>();
+            foreach (var ch in _Chats)
+            {
+                if (tags.IndexOf(ch.Tag) != -1) result.Add(ch.Id);
+            }
+
+            if (result == null || result.Count < 1) result.Add(GetChatId("#DBG"));
+
+            return result;
+        }
+
         long GetChatId(string tag = "error")
         {
             foreach (var ch in _Chats)
             {
-                if (ch.Tag == tag) return ch.Id;
+                if (tag.IndexOf(ch.Tag) != -1) return ch.Id;
             }
-            return debugChat;
+            return GetChatId("#DBG");
         }
 
         #endregion
@@ -93,12 +106,16 @@ namespace StopHandler.ViewModels
 
         void ApplyStopCommand(StopCommand stopCmd)
         {
-            if(stopCmd.Chat != "ТЕСТ" && stopCmd.Chat != "БФ") _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("БФ"));
-            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId(stopCmd.Chat));
+            if(stopCmd.Chat.IndexOf("#DBG") != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+            foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
+            {
+                _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+            }
+            
         }
         void ApplyErrorCommand(ErrorCommand errCmd)
         {
-            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(errCmd.Chat));
+            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId("#DBG"));
         }
 
         #endregion
