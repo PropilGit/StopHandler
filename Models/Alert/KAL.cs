@@ -7,44 +7,135 @@ namespace StopHandler.Models.Alert
 {
     class KAL
     {
-        class Clock
+        class Controller
         {
-            static Clock instance;
-            public static Clock GetInstance()
+            static Controller instance;
+            public static Controller GetInstance()
             {
-                if (instance == null) instance = new Clock(true);
+                if (instance == null) instance = new Controller();
                 return instance;
             }
 
-            public Clock(bool isMoscowTime)
+            public Controller()
             {
-                dispatcherTimer = new DispatcherTimer();
-                dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-                dispatcherTimer.Interval = new TimeSpan(0, 1, 0);
-                dispatcherTimer.Start();
-
-                Hour = DateTime.Now.Hour;
-                Min = DateTime.Now.Minute;
+                firstAlertTimeValue = 6;
+                secondAlertTimeValue = 8;
+                ttasks = new List<TimerTask>();
             }
 
-            DispatcherTimer dispatcherTimer;
-            public int Hour { get; private set; }
-            public int Min { get; private set; }
+            public delegate void UpdateTaskList();
+            public event UpdateTaskList onTaskListupdate;
 
-            public delegate void UpdateTime(int hour, int min);
-            public event UpdateTime onTimeUpdate;
+            public delegate void SMTP_NoticeReqes(int taskNum, int time);
+            public event SMTP_NoticeReqes onSMTP_AlertReqest;
 
-            private void dispatcherTimer_Tick(object sender, EventArgs e)
+            public int MinFirstTime { get => minFirstTime; }
+            int minFirstTime = 1;
+            public int MaxFirstTime { get => maxFirstTime; }
+            int maxFirstTime = 11;
+
+            public int MinSecondTime { get => minSecondTime; }
+            int minSecondTime = 2;
+            public int MaxSecondTime { get => maxSecondTime; }
+            int maxSecondTime = 12;
+
+            public int FirstAlertTime
             {
-                Update();
+                get { return firstAlertTimeValue; }
+                set
+                {
+                    firstAlertTimeValue = value;
+                }
             }
+            int firstAlertTimeValue;
 
-            public void Update()
+            public int SecondAlertTime
             {
-                Hour = DateTime.Now.Hour;
-                Min = DateTime.Now.Minute;
+                get { return secondAlertTimeValue; }
+                set
+                {
+                    secondAlertTimeValue = value;
+                }
+            }
+            int secondAlertTimeValue;
 
-                onTimeUpdate(Hour, Min);
+            public List<TimerTask> TTasks { get => ttasks; }
+            List<TimerTask> ttasks;
+
+            public void ApplyTimerTask(POSTCommand cmd)
+            {
+                if (cmd.Command == "STOP")
+                {
+                    if (FindTimerTask(cmd.TaskNum) >= 0)
+                    {
+                        RemoveTimerTask(FindTimerTask(cmd.TaskNum));
+                    }
+                    else Error();
+                }
+
+                if (cmd.Command == "START")
+                {
+                    AddTimerTask(cmd);
+                }
+            }
+            public void AddTimerTask(POSTCommand cmd)
+            {
+                if (FindTimerTask(cmd.TaskNum) != -1)
+                {
+                    Error();
+                    return;
+                }
+
+                TTasks.Add(
+                    new TimerTask(cmd.TaskNum, cmd.WorkerName));
+                onTaskListupdate();
+            }
+            int FindTimerTask(int taskNum)
+            {
+                if (TTasks == null || TTasks.Count < 1)
+                {
+                    return -1;
+                }
+                for (int i = 0; i < TTasks.Count; i++)
+                {
+                    if (TTasks[i].TaskNum == taskNum)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+            void RemoveTimerTask(int index)
+            {
+                if (index < 0 || index > TTasks.Count - 1)
+                {
+                    Error();
+                    return;
+                }
+
+                TTasks.Remove(TTasks[index]);
+                onTaskListupdate();
+            }
+            public void OnTimeUpdate(int hour, int min)
+            {
+                for (int i = 0; i < TTasks.Count; i++)
+                {
+                    if (TTasks[i].Start.AddHours(firstAlertTimeValue) <= DateTime.Now && !TTasks[i].IsSendFirstAlert)
+                    {
+                        TTasks[i].IsSendFirstAlert = true;
+                        onSMTP_AlertReqest(TTasks[i].TaskNum, firstAlertTimeValue);
+                    }
+                    else if (TTasks[i].Start.AddHours(secondAlertTimeValue) <= DateTime.Now)
+                    {
+                        onSMTP_AlertReqest(TTasks[i].TaskNum, secondAlertTimeValue);
+                        RemoveTimerTask(FindTimerTask(TTasks[i].TaskNum));
+                    }
+                }
+                onTaskListupdate();
+            }
+            void Error()
+            {
+
             }
         }
 

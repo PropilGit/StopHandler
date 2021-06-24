@@ -27,6 +27,8 @@ namespace StopHandler.ViewModels
             SendTestMessageToTelegramChatCommand = new LambdaCommand(OnSendTestMessageToTelegramChatCommandExecuted,CanSendTestMessageToTelegramChatCommandExecute);
         }
 
+        #region Log Tab
+
         #region Log
 
         private string _Log = "";
@@ -43,12 +45,107 @@ namespace StopHandler.ViewModels
 
         #endregion
 
+
+
+        #endregion
+
+        #region Telegram Tab
+
+        #region TelegramBot
+
+        TelegramBot _MyTelegramBot;
+
+        TelegramBot InitializeTelegramBot()
+        {
+            TelegramBot newTelegramBot = TelegramBot.GetInstance();
+            newTelegramBot.onLogUpdate += AddLog;
+
+            return newTelegramBot;
+        }
+
+        #endregion
+
         #region Message
 
         private string _Message = "";
         public string Message { get => _Message; set => Set(ref _Message, value); }
 
         #endregion
+
+        #region SendMessageToTelegramChatCommand 
+
+        public ICommand SendMessageToTelegramChatCommand { get; }
+        private bool CanSendMessageToTelegramChatCommandExecute(object p) => true;
+        private void OnSendMessageToTelegramChatCommandExecuted(object p)
+        {
+            if (String.IsNullOrEmpty(Message)) return;
+            _MyTelegramBot.SendMessageToChat(Message, _SelectedChat.Id);
+            Message = "";
+        }
+
+        #endregion
+
+        #region SendTestMessageToTelegramChatCommand 
+
+        public ICommand SendTestMessageToTelegramChatCommand { get; }
+        private bool CanSendTestMessageToTelegramChatCommandExecute(object p) => true;
+        private void OnSendTestMessageToTelegramChatCommandExecuted(object p)
+        {
+            StopCommand stopCmd = new StopCommand(
+                12345678,
+                "Иванов Иван",
+                "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
+                DateTime.Now,
+                DateTime.Now.AddMinutes(5),
+                "TEST");
+            //if (String.IsNullOrEmpty(Message)) return;
+            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
+            //Message = "";
+        }
+
+        #endregion
+
+        #endregion
+
+        #region POST Tab
+
+        POSTServer _MyPOSTServer;
+
+        POSTServer InitializePOSTServer()
+        {
+            POSTServer newPOSTServer = POSTServer.GetInstance();
+            newPOSTServer.onLogUpdate += AddLog;
+            newPOSTServer.onPOSTRequest += OnPOSTRequest;
+
+            newPOSTServer.Start();
+
+            return newPOSTServer;
+        }
+
+        void OnPOSTRequest(IPOSTCommand cmd)
+        {
+            UpdatePFUserList(cmd.Worker);
+            if (cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
+            else ApplyErrorCommand((ErrorCommand)cmd);
+
+        }
+
+        void ApplyStopCommand(StopCommand stopCmd)
+        {
+            if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+            foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
+            {
+                _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+            }
+
+        }
+        void ApplyErrorCommand(ErrorCommand errCmd)
+        {
+            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
+        }
+
+        #endregion
+
 
         #region Chats
 
@@ -135,87 +232,6 @@ namespace StopHandler.ViewModels
 
         #endregion
 
-        #region POST
-
-        POSTServer _MyPOSTServer;
-
-        POSTServer InitializePOSTServer()
-        {
-            POSTServer newPOSTServer = POSTServer.GetInstance();
-            newPOSTServer.onLogUpdate += AddLog;
-            newPOSTServer.onPOSTRequest += OnPOSTRequest;
-
-            newPOSTServer.Start();
-
-            return newPOSTServer;
-        }
-
-        void OnPOSTRequest(IPOSTCommand cmd)
-        {
-            UpdatePFUserList(cmd.Worker);
-            if(cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
-            else ApplyErrorCommand((ErrorCommand)cmd);
-
-        }
-
-        void ApplyStopCommand(StopCommand stopCmd)
-        {
-            if(stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
-            foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
-            {
-                _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
-            }
-            
-        }
-        void ApplyErrorCommand(ErrorCommand errCmd)
-        {
-            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
-        }
-
-        #endregion
-
-        #region Telegram
-
-        //Переменные
-        TelegramBot _MyTelegramBot;
-
-        TelegramBot InitializeTelegramBot()
-        {
-            TelegramBot newTelegramBot = TelegramBot.GetInstance();
-            newTelegramBot.onLogUpdate += AddLog;
-
-            return newTelegramBot;
-        }
-
-        // SendMessageToTelegramChatCommand
-        public ICommand SendMessageToTelegramChatCommand{ get; }
-        private bool CanSendMessageToTelegramChatCommandExecute(object p) => true;
-        private void OnSendMessageToTelegramChatCommandExecuted(object p)
-        {
-            if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(Message, _SelectedChat.Id);
-            Message = "";
-        }
-
-        // SendTestMessageToTelegramChatCommand
-        public ICommand SendTestMessageToTelegramChatCommand{ get; }
-        private bool CanSendTestMessageToTelegramChatCommandExecute(object p) => true;
-        private void OnSendTestMessageToTelegramChatCommandExecuted(object p)
-        {
-            StopCommand stopCmd = new StopCommand(
-                12345678, 
-                "Иванов Иван", 
-                "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
-                DateTime.Now,
-                DateTime.Now.AddMinutes(5),
-                "TEST");
-            //if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
-            //Message = "";
-        }
-
-        #endregion
-
         #region Other
 
         public void CloseApplication()
@@ -246,3 +262,6 @@ private void OnCloseApplicationCommandExecuted(object p)
 #endregion
 
 */
+
+#region _ 
+#endregion
