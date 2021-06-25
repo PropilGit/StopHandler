@@ -5,6 +5,7 @@ using System.Windows.Threading;
 
 namespace StopHandler.Models.Alert
 {
+    /*
     class KAL
     {
         class Controller
@@ -172,4 +173,5 @@ namespace StopHandler.Models.Alert
             }
         }
     }
+*/
 }

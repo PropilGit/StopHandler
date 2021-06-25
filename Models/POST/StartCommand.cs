@@ -20,13 +20,13 @@ namespace StopHandler.Models.POST
 
         public int TaskNum { get; private set; }
         public string Worker { get; private set; }
-        public DateTime Time { get; private set; }
+        public DateTime Start { get; private set; }
 
-        public StartCommand(int taskNum, string worker, DateTime time)
+        public StartCommand(int taskNum, string worker, DateTime start)
         {
             TaskNum = taskNum;
             Worker = worker;
-            Time = time;
+            Start = start;
         }
         public static StartCommand Instantiate(string[] values)
         {
@@ -34,7 +34,8 @@ namespace StopHandler.Models.POST
             {
                 try
                 {
-                    return new StartCommand(Int32.Parse(values[1]), values[2], DateTime.Parse(values[3]));
+                    DateTime start = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[3]));
+                    return new StartCommand(Int32.Parse(values[1]), values[2], start);
                 }
                 catch (Exception)
                 {

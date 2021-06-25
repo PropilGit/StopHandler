@@ -41,7 +41,9 @@ namespace StopHandler.Models.POST
             {
                 try
                 {
-                    return new StopCommand(Int32.Parse(values[1]), values[2], values[3], DateTime.Parse(values[4]), DateTime.Parse(values[5]), values[6]);
+                    DateTime start = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[4]));
+                    DateTime stop = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[5]));
+                    return new StopCommand(Int32.Parse(values[1]), values[2], values[3], start, stop, values[6]);
                 }
                 catch (Exception)
                 {

@@ -11,6 +11,7 @@ using StopHandler.Infrastructure.Commands;
 using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
+using StopHandler.Models.Alert;
 
 namespace StopHandler.ViewModels
 {
@@ -18,34 +19,91 @@ namespace StopHandler.ViewModels
     {
         public MainWindowViewModel()
         {
-            _MyPOSTServer = InitializePOSTServer();
-            _MyTelegramBot = InitializeTelegramBot();
+            _POSTServer = InitializePOSTServer();
+            _TelegramBot = InitializeTelegramBot();
+            _Clock = InitializeClock();
+
             LoadChatsList();
             LoadPFUsersList();
 
             SendMessageToTelegramChatCommand = new LambdaCommand(OnSendMessageToTelegramChatCommandExecuted, CanSendMessageToTelegramChatCommandExecute);
             SendTestMessageToTelegramChatCommand = new LambdaCommand(OnSendTestMessageToTelegramChatCommandExecuted,CanSendTestMessageToTelegramChatCommandExecute);
+
+
+
+            AlertTasks = new ObservableCollection<AlertTask>();
+            AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
+            AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
+            AlertTasks.Add(new AlertTask("test3", 111113, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
         }
 
-        #region Log Tab
+        #region Alert Tab
 
-        #region Log
+        #region Clock
 
-        private string _Log = "";
-        public string Log { get => _Log; set => Set(ref _Log, value); }
+        #region Time
 
-        public void AddLog(string msg, bool isError = false)
+        string _Time = "--:--";
+        public string Time { get => _Time; set => Set(ref _Time, value); }
+
+        #endregion
+
+        Clock _Clock;
+
+        Clock InitializeClock()
         {
-            Log += "[" + DateTime.Now + "] " + msg + "\r\n";
-            if (isError)
-            {
-                _MyTelegramBot.SendMessageToChat(msg, GetChatId(debugChat.Tag));
-            }
+            Clock clock = Clock.GetInstance();
+            clock.onTimeUpdate += OnTimeUpdate;
+            return clock;
+        }
+
+        void OnTimeUpdate(int hour, int min)
+        {
+            Time = hour.ToString() + ":" + min.ToString();
         }
 
         #endregion
 
+        #region UntilFirstAlert UntilSecondAlert
 
+        int _UntilFirstAlert = 6;
+        public int UntilFirstAlert { 
+            get => _UntilFirstAlert; 
+            set {
+                Set(ref _UntilFirstAlert, value);
+                foreach (var at in AlertTasks)
+                {
+                    at.UpdateAlertDates(UntilFirstAlert, UntilSecondAlert);
+                }
+            } 
+        }
+
+        int _UntilSecondAlert = 8;
+        public int UntilSecondAlert { 
+            get => _UntilSecondAlert;
+            set
+            {
+                Set(ref _UntilSecondAlert, value);
+                foreach (var at in AlertTasks)
+                {
+                    at.UpdateAlertDates(UntilFirstAlert, UntilSecondAlert);
+                }
+            } 
+        }
+
+        #endregion
+
+        #region AlertTasks 
+
+        private ObservableCollection<AlertTask> _AlertTasks;
+        public ObservableCollection<AlertTask> AlertTasks { get => _AlertTasks; set => Set(ref _AlertTasks, value); }
+
+
+
+        #endregion
+
+        #region _ 
+        #endregion
 
         #endregion
 
@@ -53,7 +111,7 @@ namespace StopHandler.ViewModels
 
         #region TelegramBot
 
-        TelegramBot _MyTelegramBot;
+        TelegramBot _TelegramBot;
 
         TelegramBot InitializeTelegramBot()
         {
@@ -79,7 +137,7 @@ namespace StopHandler.ViewModels
         private void OnSendMessageToTelegramChatCommandExecuted(object p)
         {
             if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(Message, _SelectedChat.Id);
+            _TelegramBot.SendMessageToChat(Message, _SelectedChat.Id);
             Message = "";
         }
 
@@ -99,7 +157,7 @@ namespace StopHandler.ViewModels
                 DateTime.Now.AddMinutes(5),
                 "TEST");
             //if (String.IsNullOrEmpty(Message)) return;
-            _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
+            _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
             //Message = "";
         }
 
@@ -109,7 +167,23 @@ namespace StopHandler.ViewModels
 
         #region POST Tab
 
-        POSTServer _MyPOSTServer;
+        #region Log
+
+        private string _Log = "";
+        public string Log { get => _Log; set => Set(ref _Log, value); }
+
+        public void AddLog(string msg, bool isError = false)
+        {
+            Log += "[" + DateTime.Now + "] " + msg + "\r\n";
+            if (isError)
+            {
+                _TelegramBot.SendMessageToChat(msg, GetChatId(debugChat.Tag));
+            }
+        }
+
+        #endregion
+
+        POSTServer _POSTServer;
 
         POSTServer InitializePOSTServer()
         {
@@ -130,21 +204,26 @@ namespace StopHandler.ViewModels
 
         }
 
+        void ApplyStartCommand(StartCommand startCmd)
+        {
+            AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+        }
         void ApplyStopCommand(StopCommand stopCmd)
         {
-            if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+            if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
             foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
             {
-                _MyTelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+                _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
             }
 
         }
         void ApplyErrorCommand(ErrorCommand errCmd)
         {
-            _MyTelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
+            _TelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
         }
 
         #endregion
+
 
 
         #region Chats
@@ -236,7 +315,7 @@ namespace StopHandler.ViewModels
 
         public void CloseApplication()
         {
-            _MyPOSTServer.Stop();
+            _POSTServer.Stop();
         }
 
         #endregion
@@ -254,7 +333,7 @@ private bool CanCloseApplicationCommandExecute(object p) => true;
 
 private void OnCloseApplicationCommandExecuted(object p)
 {
-    _MyPOSTServer.Stop();
+    _POSTServer.Stop();
     (RootObject as Window)?.Close();
     //Application.Current.Shutdown();
 }

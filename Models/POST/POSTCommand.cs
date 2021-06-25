@@ -6,6 +6,7 @@ namespace StopHandler.Models.POST
 {
     abstract class POSTCommand
     {
+
         public static IPOSTCommand Parse(string post)
         {
             List<string> identifiers = new List<string>();
@@ -14,6 +15,12 @@ namespace StopHandler.Models.POST
             //STOP
             tags.Add(StopCommand.tags);
             identifiers.Add(StopCommand.identifier);
+
+            //STOP
+            tags.Add(StartCommand.tags);
+            identifiers.Add(StartCommand.identifier);
+
+
 
             string[] values = { };
             for (int com = 0; com < tags.Count; com++)
@@ -43,7 +50,8 @@ namespace StopHandler.Models.POST
             if (values == null || values.Length == 0) return null;
             foreach (var val in values) if (val == null || val == "") return null;
 
-            if (values[0] == "STOP") return StopCommand.Instantiate(values); //STOP
+            if (values[0] == StopCommand.identifier) return StopCommand.Instantiate(values); //STOP
+            if (values[0] == StartCommand.identifier) return StopCommand.Instantiate(values); //START
             else return null;
 
         }
