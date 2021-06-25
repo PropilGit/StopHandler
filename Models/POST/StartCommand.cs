@@ -50,7 +50,7 @@ namespace StopHandler.Models.POST
             + tags[0] + ": " + identifier + "\n"
             + tags[1] + ": " + TaskNum + "\n"
             + tags[2] + ": " + Worker + "\n"
-            + tags[4] + ": " + Time;
+            + tags[4] + ": " + Start;
         }
     }
 }
