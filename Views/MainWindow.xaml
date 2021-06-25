@@ -35,49 +35,45 @@
                                    Text="{Binding Time}"/>
                         <Button HorizontalAlignment="Right" Margin="0,0,10,0" Width="40" Height="14"
                                 Content="Изменить" Background="White" BorderBrush="White" FontSize="8" 
-                                />
-                        <StackPanel Visibility="Visible">
+                                Command="{Binding ShowAlertMenuCommand}"/>
+                        <StackPanel Visibility="{Binding IsVisibleAlertMenu}">
                             <TextBlock Margin="0,30,0,0"
                                    TextAlignment="Center" FontSize="8" 
                                    Text="Первое напоминание через (ч.)"/>
                             <DockPanel>
                                 <Button Content="&lt;" Width="45" 
-                                    Background="White" BorderBrush="White" 
-                                    FontSize="24" 
-                                    />
+                                    Background="White" BorderBrush="White" FontSize="24" 
+                                    Command="{Binding ReduceUntilFirstAlertCommand}"/>
                                 <TextBlock Margin="10,0,10,0" Height="45"
                                        TextAlignment="Center" FontWeight="Bold" FontSize="32"
-                                       Text="{Binding UntilFirstAlert}"/>
+                                       Text="{Binding DisplayedHoursUntilFirstAlert}"/>
                                 <Button Content="&gt;" Width="45" 
-                                    Background="White" BorderBrush="White" 
-                                    FontSize="24" 
-                                    />
+                                    Background="White" BorderBrush="White" FontSize="24" 
+                                    Command="{Binding IncreaseUntilFirstAlertCommand}"/>
                             </DockPanel>
                             <TextBlock Margin="0,10,0,0"
                                    TextAlignment="Center" FontSize="8" 
                                    Text="Второе напоминание через (ч.)"/>
                             <DockPanel>
                                 <Button Content="&lt;" Width="45" 
-                                    Background="White" BorderBrush="White" 
-                                    FontSize="24" 
-                                    />
+                                    Background="White" BorderBrush="White" FontSize="24" 
+                                    Command="{Binding ReduceUntilSecondAlertCommand}"/>
                                 <TextBlock Margin="10,0,10,0" Height="45"
                                        TextAlignment="Center" FontWeight="Bold" FontSize="32"
-                                       Text="{Binding UntilSecondAlert}"/>
+                                       Text="{Binding DisplayedHoursUntilSecondAlert}"/>
                                 <Button Content="&gt;" Width="45" 
-                                    Background="White" BorderBrush="White" 
-                                    FontSize="24" 
-                                    />
+                                    Background="White" BorderBrush="White" FontSize="24" 
+                                    Command="{Binding IncreaseUntilSecondAlertCommand}"/>
                             </DockPanel>
                             <DockPanel Margin="0,10,0,0">
                                 <Button DockPanel.Dock="Left"
                                     BorderBrush="LightGreen" Background="LightGreen" FontSize="8"
                                     Content="Применить изменения" 
-                                    />
+                                    Command="{Binding ApplyAlertSetupCommand}"/>
                                 <Button DockPanel.Dock="Right"
                                     BorderBrush="Pink" Background="Pink" FontSize="8"
                                     Content="Отмена" 
-                                    />
+                                    Command="{Binding DenyAlertSetupCommand}"/>
                             </DockPanel>
                         </StackPanel>
                         

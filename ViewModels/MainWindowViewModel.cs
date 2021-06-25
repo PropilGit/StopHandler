@@ -26,11 +26,27 @@ namespace StopHandler.ViewModels
             LoadChatsList();
             LoadPFUsersList();
 
+            //Telegram
             SendMessageToTelegramChatCommand = new LambdaCommand(OnSendMessageToTelegramChatCommandExecuted, CanSendMessageToTelegramChatCommandExecute);
             SendTestMessageToTelegramChatCommand = new LambdaCommand(OnSendTestMessageToTelegramChatCommandExecuted,CanSendTestMessageToTelegramChatCommandExecute);
 
+            //Alert setup
+            ReduceUntilFirstAlertCommand = new LambdaCommand(OnReduceUntilFirstAlertCommandExecuted, CanReduceUntilFirstAlertCommandExecute);
+            IncreaseUntilFirstAlertCommand = new LambdaCommand(OnIncreaseUntilFirstAlertCommandExecuted, CanIncreaseUntilFirstAlertCommandExecute);
+            ReduceUntilSecondAlertCommand = new LambdaCommand(OnReduceUntilSecondAlertCommandExecuted, CanReduceUntilSecondAlertCommandExecute);
+            IncreaseUntilSecondAlertCommand = new LambdaCommand(OnIncreaseUntilSecondAlertCommandExecuted, CanIncreaseUntilSecondAlertCommandExecute);            
+
+            //AlertMenu setup
+            ShowAlertMenuCommand = new LambdaCommand(OnShowAlertMenuCommandExecuted, CanShowAlertMenuCommandExecute);
+            ApplyAlertSetupCommand = new LambdaCommand(OnApplyAlertSetupCommandExecuted, CanApplyAlertSetupCommandExecute);
+            DenyAlertSetupCommand = new LambdaCommand(OnDenyAlertSetupCommandExecuted, CanDenyAlertSetupCommandExecute);
+
+            _UntilFirstAlert = 6;
+            _UntilSecondAlert = 8;
+            IsVisibleAlertMenu = Visibility.Hidden;
 
 
+            //=======================================================================================
             AlertTasks = new ObservableCollection<AlertTask>();
             AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
@@ -56,10 +72,15 @@ namespace StopHandler.ViewModels
             clock.onTimeUpdate += OnTimeUpdate;
             return clock;
         }
-
         void OnTimeUpdate(int hour, int min)
         {
-            Time = hour.ToString() + ":" + min.ToString();
+            string strH = hour.ToString();
+            if (strH.Length == 1) strH = "0" + strH;
+
+            string strM = min.ToString();
+            if (strM.Length == 1) strM = "0" + strM;
+
+            Time = strH + ":" + strM;
         }
 
         #endregion
@@ -93,16 +114,115 @@ namespace StopHandler.ViewModels
 
         #endregion
 
+        #region DisplayedHoursUntilFirstAlert DisplayedHoursUntilSecondAlert
+
+        int _DisplayedHoursUntilFirstAlert;
+        public int DisplayedHoursUntilFirstAlert { get => _DisplayedHoursUntilFirstAlert; set => Set(ref _DisplayedHoursUntilFirstAlert, value); }
+
+        int _DisplayedHoursUntilSecondAlert;
+        public int DisplayedHoursUntilSecondAlert { get => _DisplayedHoursUntilSecondAlert; set => Set(ref _DisplayedHoursUntilSecondAlert, value); }
+
+        #endregion
+
         #region AlertTasks 
 
         private ObservableCollection<AlertTask> _AlertTasks;
         public ObservableCollection<AlertTask> AlertTasks { get => _AlertTasks; set => Set(ref _AlertTasks, value); }
 
+        #endregion
 
+        #region IsVisibleAlertMenu 
+
+        private Visibility _IsVisibleAlertMenu;
+        public Visibility IsVisibleAlertMenu { get => _IsVisibleAlertMenu; set => Set(ref _IsVisibleAlertMenu, value); }
 
         #endregion
 
-        #region _ 
+        #region ReduceUntilFirstAlertCommand 
+
+        public ICommand ReduceUntilFirstAlertCommand { get; }
+        private bool CanReduceUntilFirstAlertCommandExecute(object p) => true;
+        private void OnReduceUntilFirstAlertCommandExecuted(object p)
+        {
+            if (DisplayedHoursUntilFirstAlert == 1) return;
+            DisplayedHoursUntilFirstAlert--;
+        }
+
+        #endregion
+
+        #region IncreaseUntilFirstAlertCommand 
+
+        public ICommand IncreaseUntilFirstAlertCommand { get; }
+        private bool CanIncreaseUntilFirstAlertCommandExecute(object p) => true;
+        private void OnIncreaseUntilFirstAlertCommandExecuted(object p)
+        {
+            if (DisplayedHoursUntilFirstAlert == DisplayedHoursUntilSecondAlert - 1) return;
+            DisplayedHoursUntilFirstAlert++;
+        }
+
+        #endregion
+
+        #region ReduceUntilSecondAlertCommand 
+
+        public ICommand ReduceUntilSecondAlertCommand { get; }
+        private bool CanReduceUntilSecondAlertCommandExecute(object p) => true;
+        private void OnReduceUntilSecondAlertCommandExecuted(object p)
+        {
+            if (DisplayedHoursUntilSecondAlert == DisplayedHoursUntilFirstAlert + 1 ) return;
+            DisplayedHoursUntilSecondAlert--;
+        }
+
+        #endregion
+
+        #region IncreaseUntilSecondAlertCommand 
+
+        public ICommand IncreaseUntilSecondAlertCommand { get; }
+        private bool CanIncreaseUntilSecondAlertCommandExecute(object p) => true;
+        private void OnIncreaseUntilSecondAlertCommandExecuted(object p)
+        {
+            if (DisplayedHoursUntilSecondAlert == 10) return;
+            DisplayedHoursUntilSecondAlert++;
+        }
+
+        #endregion
+
+        #region ShowAlertMenuCommand
+
+        public ICommand ShowAlertMenuCommand { get; }
+        private bool CanShowAlertMenuCommandExecute(object p) => true;
+        private void OnShowAlertMenuCommandExecuted(object p)
+        {
+            DisplayedHoursUntilFirstAlert = UntilFirstAlert;
+            DisplayedHoursUntilSecondAlert = UntilSecondAlert;
+
+            IsVisibleAlertMenu = Visibility.Visible;
+        }
+
+        #endregion
+
+        #region ApplyAlertSetupCommand 
+
+        public ICommand ApplyAlertSetupCommand  { get; }
+        private bool CanApplyAlertSetupCommandExecute(object p) => true;
+        private void OnApplyAlertSetupCommandExecuted(object p)
+        {
+            UntilFirstAlert = DisplayedHoursUntilFirstAlert;
+            UntilSecondAlert = DisplayedHoursUntilSecondAlert;
+
+            IsVisibleAlertMenu = Visibility.Hidden;
+        }
+
+        #endregion
+
+        #region DenyAlertSetupCommand 
+
+        public ICommand DenyAlertSetupCommand { get; }
+        private bool CanDenyAlertSetupCommandExecute(object p) => true;
+        private void OnDenyAlertSetupCommandExecuted(object p)
+        {
+            IsVisibleAlertMenu = Visibility.Hidden;
+        }
+
         #endregion
 
         #endregion
