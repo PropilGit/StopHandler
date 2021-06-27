@@ -8,9 +8,9 @@ namespace StopHandler.Models.POST
     {
         /*
         CMD#START#CMD
-        TASK#201488#TASK
+        TASK#121574#TASK
         WRK#Иванов Иван#WRK
-        TIME#20-01-2021 14:48#TIME
+        STR#1624776949#STR
         */
 
         public string[] Tags { get => tags; }
@@ -34,7 +34,7 @@ namespace StopHandler.Models.POST
             {
                 try
                 {
-                    DateTime start = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[3]));
+                    DateTime start = POSTCommand.UnixTimeToLocalTime(long.Parse(values[3]));
                     return new StartCommand(Int32.Parse(values[1]), values[2], start);
                 }
                 catch (Exception)

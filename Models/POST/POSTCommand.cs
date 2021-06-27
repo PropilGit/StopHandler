@@ -51,11 +51,10 @@ namespace StopHandler.Models.POST
             foreach (var val in values) if (val == null || val == "") return null;
 
             if (values[0] == StopCommand.identifier) return StopCommand.Instantiate(values); //STOP
-            if (values[0] == StartCommand.identifier) return StopCommand.Instantiate(values); //START
+            if (values[0] == StartCommand.identifier) return StartCommand.Instantiate(values); //START
             else return null;
 
         }
-
         private static string FindTag(string post, string tag)
         {
             int openTagIndex = post.IndexOf(tag + '#');
@@ -65,6 +64,11 @@ namespace StopHandler.Models.POST
 
             int startIndex = openTagIndex + tag.Length + 1;
             return post.Substring(startIndex, closeTagIndex - startIndex);
+        }
+        public static DateTime UnixTimeToLocalTime(long unix)
+        {
+            var delta = DateTime.Now.Subtract(DateTime.UtcNow);
+            return DateTime.UnixEpoch.AddSeconds(unix).Add(delta);
         }
     }
 }

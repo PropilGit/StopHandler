@@ -44,13 +44,14 @@ namespace StopHandler.ViewModels
             _UntilFirstAlert = 6;
             _UntilSecondAlert = 8;
             IsVisibleAlertMenu = Visibility.Hidden;
-
-
-            //=======================================================================================
             AlertTasks = new ObservableCollection<AlertTask>();
+
+
+            /*/=======================================================================================
             AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test3", 111113, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
+            */
         }
 
         #region Alert Tab
@@ -70,14 +71,15 @@ namespace StopHandler.ViewModels
         {
             Clock clock = Clock.GetInstance();
             clock.onTimeUpdate += OnTimeUpdate;
+            clock.onTimeUpdate += CheckAlertTasks;
             return clock;
         }
-        void OnTimeUpdate(int hour, int min)
+        void OnTimeUpdate()
         {
-            string strH = hour.ToString();
+            string strH = DateTime.Now.Hour.ToString();
             if (strH.Length == 1) strH = "0" + strH;
 
-            string strM = min.ToString();
+            string strM = DateTime.Now.Minute.ToString();
             if (strM.Length == 1) strM = "0" + strM;
 
             Time = strH + ":" + strM;
@@ -128,6 +130,22 @@ namespace StopHandler.ViewModels
 
         private ObservableCollection<AlertTask> _AlertTasks;
         public ObservableCollection<AlertTask> AlertTasks { get => _AlertTasks; set => Set(ref _AlertTasks, value); }
+
+        void CheckAlertTasks()
+        {
+            if (AlertTasks == null || AlertTasks.Count == 0) return;
+
+            foreach (var at in AlertTasks)
+            {
+                if (at.CheckFirstAlert(DateTime.Now) || at.CheckFirstAlert(DateTime.Now)) SendAlert(at);
+            }
+        }
+
+        void SendAlert(AlertTask alertTask)
+        {
+            _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateMessageForPlanFix());
+            
+        }
 
         #endregion
 
@@ -319,16 +337,20 @@ namespace StopHandler.ViewModels
         void OnPOSTRequest(IPOSTCommand cmd)
         {
             UpdatePFUserList(cmd.Worker);
-            if (cmd.Identifier == StopCommand.identifier) ApplyStopCommand((StopCommand)cmd);
-            else ApplyErrorCommand((ErrorCommand)cmd);
+            if (cmd.Identifier == StopCommand.identifier) ApplyCommand((StopCommand)cmd);
+            else if (cmd.Identifier == StartCommand.identifier) ApplyCommand((StartCommand)cmd);
+            else ApplyCommand((ErrorCommand)cmd);
 
         }
 
-        void ApplyStartCommand(StartCommand startCmd)
+        void ApplyCommand(StartCommand startCmd)
         {
-            AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+            });    
         }
-        void ApplyStopCommand(StopCommand stopCmd)
+        void ApplyCommand(StopCommand stopCmd)
         {
             if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
             foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
@@ -337,7 +359,7 @@ namespace StopHandler.ViewModels
             }
 
         }
-        void ApplyErrorCommand(ErrorCommand errCmd)
+        void ApplyCommand(ErrorCommand errCmd)
         {
             _TelegramBot.SendMessageToChat(errCmd.GenerateMessage(), GetChatId(debugChat.Tag));
         }

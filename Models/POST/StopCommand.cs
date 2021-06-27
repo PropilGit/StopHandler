@@ -11,8 +11,8 @@ namespace StopHandler.Models.POST
         TASK#121574#TASK
         WRK#Путин Владимир#WRK
         REP#Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз.#REP
-        STR#20-01-2021 14:48#STR
-        STP#20-01-2021 14:59#STP
+        STR#1624776949#STR
+        STP#1624777449#STP
         CHAT#ТЕСТ#CHAT
         */
         public string[] Tags { get => tags; }
@@ -42,8 +42,8 @@ namespace StopHandler.Models.POST
                 try
                 {
                     String msg = values[3].Replace("<br>", "\n");
-                    DateTime start = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[4]));
-                    DateTime stop = (new DateTime(1970, 1, 1, 0, 0, 0, 0)).AddSeconds(long.Parse(values[5]));
+                    DateTime start = POSTCommand.UnixTimeToLocalTime(long.Parse(values[4]));
+                    DateTime stop = POSTCommand.UnixTimeToLocalTime(long.Parse(values[5]));
                     return new StopCommand(Int32.Parse(values[1]), values[2], msg, start, stop, values[6]);
                 }
                 catch (Exception)

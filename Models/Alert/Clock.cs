@@ -24,7 +24,7 @@ namespace StopHandler.Models
         public int Hour { get; private set; }
         public int Min { get; private set; }
 
-        public delegate void UpdateTime(int hour, int min);
+        public delegate void UpdateTime();
         public event UpdateTime onTimeUpdate;
 
         public Clock()
@@ -33,8 +33,8 @@ namespace StopHandler.Models
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 1, 0);
             
-            Hour = DateTime.Now.Hour;
-            Min = DateTime.Now.Minute;
+            //Hour = DateTime.Now.Hour;
+            //Min = DateTime.Now.Minute;
             Update();
 
             SynchronizeClockAsync();
@@ -61,10 +61,10 @@ namespace StopHandler.Models
 
         public void Update()
         {
-            Hour = DateTime.Now.Hour;
-            Min = DateTime.Now.Minute;
+            //Hour = DateTime.Now.Hour;
+            //Min = DateTime.Now.Minute;
 
-            if(onTimeUpdate != null) onTimeUpdate(Hour, Min);
+            if(onTimeUpdate != null) onTimeUpdate();
         }
     }
 }

@@ -165,6 +165,30 @@ namespace StopHandler.Models.POST
         }
         #endregion
 
+        #region SendReqest
+
+        public async void SendPOSTAsync(string url, string message)
+        {
+            await Task.Run(() => SendPOST(url, message));
+        }
+
+        void SendPOST(string url, string message)
+        {
+            WebRequest request = WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";         
+
+            byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(message);
+            request.ContentLength = byteArray.Length;
+
+            using (System.IO.Stream dataStream = request.GetRequestStream())
+            {
+                dataStream.Write(byteArray, 0, byteArray.Length);
+            }
+        }
+
+        #endregion
+
         public void SMTP_OK(NetworkStream stream)
         {
             Byte[] data = Encoding.UTF8.GetBytes("HTTP/1.1 200 OK");
@@ -175,21 +199,7 @@ namespace StopHandler.Models.POST
 
 
 /*  
-        public void SMTP_AlertReqest(int taskNum, int time)
-        {
-            WebRequest request = WebRequest.Create("https://bankrotforum.planfix.ru/webhook/json/timerAlert");
-            request.Method = "POST";
-            string sName = "{'taskNum':'" + taskNum + "','time':'" + time + "'}";
-
-            byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(sName);
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.ContentLength = byteArray.Length;
-
-            using (System.IO.Stream dataStream = request.GetRequestStream())
-            {
-                dataStream.Write(byteArray, 0, byteArray.Length);
-            }
-        }
+        
 string RecieveDataToString(NetworkStream stream)
         {
             var bytes = GetBytes(stream, 1024);
