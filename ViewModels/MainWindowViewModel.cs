@@ -41,8 +41,8 @@ namespace StopHandler.ViewModels
             ApplyAlertSetupCommand = new LambdaCommand(OnApplyAlertSetupCommandExecuted, CanApplyAlertSetupCommandExecute);
             DenyAlertSetupCommand = new LambdaCommand(OnDenyAlertSetupCommandExecuted, CanDenyAlertSetupCommandExecute);
 
-            _UntilFirstAlert = 6;
-            _UntilSecondAlert = 8;
+            _UntilFirstAlert = 1;
+            _UntilSecondAlert = 2;
             IsVisibleAlertMenu = Visibility.Hidden;
             AlertTasks = new ObservableCollection<AlertTask>();
 
@@ -137,13 +137,14 @@ namespace StopHandler.ViewModels
 
             foreach (var at in AlertTasks)
             {
-                if (at.CheckFirstAlert(DateTime.Now) || at.CheckFirstAlert(DateTime.Now)) SendAlert(at);
+                if (at.CheckFirstAlert(DateTime.Now) || at.CheckSecondAlert(DateTime.Now)) SendAlert(at);
             }
         }
 
         void SendAlert(AlertTask alertTask)
         {
-            _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateMessageForPlanFix());
+            _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateStringForPlanFix());
+            _TelegramBot.SendMessageToChat(alertTask.GenerateStringForPlanFix(), GetChatId("#DBG"));
             
         }
 
@@ -226,6 +227,11 @@ namespace StopHandler.ViewModels
         {
             UntilFirstAlert = DisplayedHoursUntilFirstAlert;
             UntilSecondAlert = DisplayedHoursUntilSecondAlert;
+
+            foreach (var at in AlertTasks)
+            {
+                at.UpdateAlertDates(UntilFirstAlert, UntilSecondAlert);
+            }
 
             IsVisibleAlertMenu = Visibility.Hidden;
         }

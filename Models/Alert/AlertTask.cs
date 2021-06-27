@@ -38,19 +38,35 @@ namespace StopHandler.Models.Alert
         public bool CheckFirstAlert(DateTime dt)
         {
             if (IsFirstAlertSend) return false;
-            if (dt > FirstAlertDate) return true;
+            if (dt > FirstAlertDate)
+            {
+                IsFirstAlertSend = true;
+                return true;
+            }
             return false;
         }
         public bool CheckSecondAlert(DateTime dt)
         {
             if (IsSecondAlertSend) return false;
-            if (dt > SecondAlertDate) return true;
+            if (dt > SecondAlertDate)
+            {
+                IsSecondAlertSend = true;
+                return true;
+            }
             return false;
         }
 
-        public string GenerateMessageForPlanFix()
+        public Dictionary<string, string> GenerateValuesForPlanFix()
         {
-            return "{'taskNum':'" + TaskNum + "','time':'" + StartDate.Subtract(DateTime.Now).Hours.ToString() + "'}";
+            return new Dictionary<string, string> {
+                { "taskNum", TaskNum.ToString() },
+                { "time", StartDate.Subtract(DateTime.Now).Hours.ToString() }
+            };
+        }
+        public string GenerateStringForPlanFix()
+        {
+            return "{'taskNum':" + TaskNum + ", 'time': " + StartDate.Subtract(DateTime.Now).Hours + "}";
+            //{'taskNum':121574,'time':1}
         }
     }
 }

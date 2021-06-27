@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Collections.Generic;
 
 namespace StopHandler.Models.POST
 {
@@ -31,6 +33,7 @@ namespace StopHandler.Models.POST
 
             listening = new Thread(new ThreadStart(Listen));
             listener = new TcpListener(IPAddress.Any, port);
+
         }
         public void Start()
         {
@@ -167,26 +170,21 @@ namespace StopHandler.Models.POST
 
         #region SendReqest
 
-        public async void SendPOSTAsync(string url, string message)
+        private static readonly HttpClient _HTTPClient = new HttpClient();
+
+        public async void SendPOSTAsync(string url, Dictionary<string, string> values)
         {
-            await Task.Run(() => SendPOST(url, message));
+            var content = new FormUrlEncodedContent(values);
+            var response = await _HTTPClient.PostAsync(url, content);
+            //var responseString = await response.Content.ReadAsStringAsync();
         }
-
-        void SendPOST(string url, string message)
+        public async void SendPOSTAsync(string url, string jsonString)
         {
-            WebRequest request = WebRequest.Create(url);
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";         
-
-            byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(message);
-            request.ContentLength = byteArray.Length;
-
-            using (System.IO.Stream dataStream = request.GetRequestStream())
-            {
-                dataStream.Write(byteArray, 0, byteArray.Length);
-            }
+            var content = new StringContent(jsonString, Encoding.UTF8, "application/x-www-form-urlencoded");
+            await _HTTPClient.PostAsync(url, content);
+            //var response = await _HTTPClient.PostAsync(url, content);
+            //var responseString = await response.Content.ReadAsStringAsync();
         }
-
         #endregion
 
         public void SMTP_OK(NetworkStream stream)
@@ -198,29 +196,24 @@ namespace StopHandler.Models.POST
 }
 
 
-/*  
-        
-string RecieveDataToString(NetworkStream stream)
+/*
+ public async void SendPOSTAsync(string url, string message)
         {
-            var bytes = GetBytes(stream, 1024);
-            byte[] result = new byte[byt];
-            foreach (var bytes in )
-            {
-                
-            }
-            return result;
+            await Task.Run(() => SendPOST(url, message));
         }
+ 
+void SendPOST(string url, string message)
+        {
+            WebRequest request = WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            
+            byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(message);
+            request.ContentLength = byteArray.Length;
 
-        IEnumerable<byte[]> GetBytes(NetworkStream stream, int bufferValue)
-        {
-            int counter = 1000;
-            byte[] buffer = new byte[bufferValue];
-            while (stream.DataAvailable && counter > 0)
+            using (System.IO.Stream dataStream = request.GetRequestStream())
             {
-                counter--;
-                int bytes = stream.Read(buffer, 0, buffer.Length);
-                yield return buffer;
+                dataStream.Write(byteArray, 0, byteArray.Length);
             }
         }
-        
-*/
+ */
