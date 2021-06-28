@@ -26,9 +26,17 @@
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
                     
-                    <DataGrid Grid.Column="0"
+                    <DataGrid Grid.Column="0" AutoGenerateColumns="False" 
+                              GridLinesVisibility="Vertical" VerticalGridLinesBrush="DarkGray" AlternatingRowBackground="LightBlue"
                               ItemsSource="{Binding AlertTasks}">
                         
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Имя сотрудника" Binding="{Binding WorkerName}"/>
+                            <DataGridTextColumn Header="№ задачи" Binding="{Binding TaskNum}"/>
+                            <DataGridTextColumn Header="Старт" Binding="{Binding StartDate, StringFormat=hh:mm}"/>
+                            <DataGridTextColumn Header="Первое напоминание" Binding="{Binding IsFirstAlertSend}"/>
+                            <DataGridTextColumn Header="Второе напоминание" Binding="{Binding IsSecondAlertSend}"/>
+                        </DataGrid.Columns>
                     </DataGrid>
                     <WrapPanel Grid.Column="1" Margin="10,10,10,10" Orientation="Vertical" ItemWidth="130">
                         <TextBlock TextAlignment="Center" FontWeight="Bold" FontSize="48"

@@ -12,6 +12,7 @@ using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using StopHandler.Models.Alert;
+using System.Linq;
 
 namespace StopHandler.ViewModels
 {
@@ -47,11 +48,11 @@ namespace StopHandler.ViewModels
             AlertTasks = new ObservableCollection<AlertTask>();
 
 
-            /*/=======================================================================================
+            //=======================================================================================
             AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test3", 111113, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
-            */
+            //
         }
 
         #region Alert Tab
@@ -145,7 +146,11 @@ namespace StopHandler.ViewModels
         {
             _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateStringForPlanFix());
             _TelegramBot.SendMessageToChat(alertTask.GenerateStringForPlanFix(), GetChatId("#DBG"));
-            
+
+            if (alertTask.IsSecondAlertSend)
+            {
+                AlertTasks.Remove(AlertTasks.Where(i => i == alertTask).Single());
+            }
         }
 
         #endregion
@@ -363,6 +368,9 @@ namespace StopHandler.ViewModels
             {
                 _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
             }
+
+            //AlertTasks.RemoveAt(AlertTasks.Where(at => at.TaskNum == stopCmd.TaskNum).First());
+            AlertTasks.Remove(AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).Single());
 
         }
         void ApplyCommand(ErrorCommand errCmd)
