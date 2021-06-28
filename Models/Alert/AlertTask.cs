@@ -1,17 +1,22 @@
-﻿using System;
+﻿using StopHandler.ViewModels.Base;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace StopHandler.Models.Alert
 {
-    class AlertTask
+    class AlertTask: ViewModel
     {
         public string WorkerName { get; }
         public int TaskNum { get; }
         public DateTime StartDate { get; }
 
         public DateTime FirstAlertDate { get; private set; }
-        public bool IsFirstAlertSend { get; private set; }
+
+        bool _IsFirstAlertSend;
+        public bool IsFirstAlertSend { get => _IsFirstAlertSend; set => Set(ref _IsFirstAlertSend, value); }
 
         public DateTime SecondAlertDate { get; private set; }
         public bool IsSecondAlertSend { get; private set; }
@@ -28,11 +33,12 @@ namespace StopHandler.Models.Alert
 
         public void UpdateAlertDates(int untilFirstAlert, int untilSecondAlert)
         {
-            FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
-            SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
+            //debug
+            //FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
+            //SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
 
-            //FirstAlertDate = StartDate.AddHours(untilFirstAlert);
-            //SecondAlertDate = StartDate.AddHours(untilSecondAlert);
+            FirstAlertDate = StartDate.AddHours(untilFirstAlert);
+            SecondAlertDate = StartDate.AddHours(untilSecondAlert);
         }
 
         public bool CheckFirstAlert(DateTime dt)
@@ -66,7 +72,6 @@ namespace StopHandler.Models.Alert
         public string GenerateStringForPlanFix()
         {
             return "{'taskNum':" + TaskNum + ", 'time': " + StartDate.Subtract(DateTime.Now).Hours + "}";
-            //{'taskNum':121574,'time':1}
         }
     }
 }

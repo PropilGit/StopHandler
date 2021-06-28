@@ -46,11 +46,11 @@ namespace StopHandler.Models.POST
         }
         public string ToLog()
         {
-            return "Получен POST-запрос:\n"
+            return "POST-запрос:\n"
             + tags[0] + ": " + identifier + "\n"
-            + tags[1] + ": " + TaskNum + "\n"
+            + tags[1] + ": " + TaskNum.ToString() + "\n"
             + tags[2] + ": " + Worker + "\n"
-            + tags[4] + ": " + Start;
+            + tags[3] + ": " + Start.ToString();
         }
     }
 }

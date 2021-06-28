@@ -42,17 +42,16 @@ namespace StopHandler.ViewModels
             ApplyAlertSetupCommand = new LambdaCommand(OnApplyAlertSetupCommandExecuted, CanApplyAlertSetupCommandExecute);
             DenyAlertSetupCommand = new LambdaCommand(OnDenyAlertSetupCommandExecuted, CanDenyAlertSetupCommandExecute);
 
-            _UntilFirstAlert = 1;
-            _UntilSecondAlert = 2;
+            _UntilFirstAlert = 6;
+            _UntilSecondAlert = 8;
             IsVisibleAlertMenu = Visibility.Hidden;
             AlertTasks = new ObservableCollection<AlertTask>();
 
-
-            //=======================================================================================
+            /*/=======================================================================================
             AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
             AlertTasks.Add(new AlertTask("test3", 111113, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
-            //
+            /*/
         }
 
         #region Alert Tab
@@ -129,8 +128,7 @@ namespace StopHandler.ViewModels
 
         #region AlertTasks 
 
-        private ObservableCollection<AlertTask> _AlertTasks;
-        public ObservableCollection<AlertTask> AlertTasks { get => _AlertTasks; set => Set(ref _AlertTasks, value); }
+        public ObservableCollection<AlertTask> AlertTasks { get; }
 
         void CheckAlertTasks()
         {
@@ -138,19 +136,19 @@ namespace StopHandler.ViewModels
 
             foreach (var at in AlertTasks)
             {
-                if (at.CheckFirstAlert(DateTime.Now) || at.CheckSecondAlert(DateTime.Now)) SendAlert(at);
+                if (at.CheckFirstAlert(DateTime.Now) || at.CheckSecondAlert(DateTime.Now))
+                {
+                    SendAlert(at);
+                    break;
+                }
             }
         }
 
         void SendAlert(AlertTask alertTask)
         {
             _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateStringForPlanFix());
-            _TelegramBot.SendMessageToChat(alertTask.GenerateStringForPlanFix(), GetChatId("#DBG"));
 
-            if (alertTask.IsSecondAlertSend)
-            {
-                AlertTasks.Remove(AlertTasks.Where(i => i == alertTask).Single());
-            }
+            if (alertTask.IsSecondAlertSend) AlertTasks.Remove(alertTask);
         }
 
         #endregion
@@ -356,22 +354,61 @@ namespace StopHandler.ViewModels
 
         void ApplyCommand(StartCommand startCmd)
         {
-            App.Current.Dispatcher.Invoke((Action)delegate
+            try
             {
-                AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
-            });    
+                if (AlertTasks != null && AlertTasks.Count > 0)
+                {
+                    var at = AlertTasks.Where(i => i.TaskNum == startCmd.TaskNum).Single();
+                    if (at != null)
+                    {
+                        AddLog("Дублированный POST-запрос с командой START.\n" + startCmd.ToLog(), true);
+                        return;
+                    }
+                }
+                App.Current.Dispatcher.Invoke((Action)delegate
+                {
+                    AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+                });
+            }
+            catch (Exception ex)
+            {
+                AddLog("Непредвиденная ошибка при обработке входящего POST-запроса с командой START.\n" + ex.Message + "\n" + startCmd.ToLog(), true);
+            }
         }
         void ApplyCommand(StopCommand stopCmd)
         {
-            if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
-            foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
+            try
             {
-                _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+                if (AlertTasks == null || AlertTasks.Count == 0)
+                {
+                    AddLog("POST-запрос с командой STOP, список задач пуст.\n" + stopCmd.ToLog(), true);
+                    return;
+                }
+                else
+                {
+                    var at = AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).Single();
+                    if (at == null)
+                    {
+                        AddLog("POST-запрос с командой STOP, в списке отсутствует соответствующая задача.\n" + stopCmd.ToLog(), true);
+                        return;
+                    }
+                    else
+                    {
+                        App.Current.Dispatcher.Invoke((Action)delegate {
+                            AlertTasks.Remove(at);
+                        });
+                        if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+                        foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
+                        {
+                            _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+                        }
+                    }
+                }
             }
-
-            //AlertTasks.RemoveAt(AlertTasks.Where(at => at.TaskNum == stopCmd.TaskNum).First());
-            AlertTasks.Remove(AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).Single());
-
+            catch (Exception ex)
+            {
+                AddLog("Непредвиденная ошибка при обработке входящего POST-запроса с командой STOP.\n" + ex.Message + "\n" + stopCmd.ToLog(), true);
+            }        
         }
         void ApplyCommand(ErrorCommand errCmd)
         {

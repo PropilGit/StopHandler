@@ -10,8 +10,8 @@
         Height="450" 
         Width="650"
         Closed="Window_Closed">
-    
-    <!--
+
+    <!-- уже определен в MainWindow.xaml.cs
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
@@ -25,17 +25,16 @@
                         <ColumnDefinition Width="500*"/>
                         <ColumnDefinition Width="150"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <DataGrid Grid.Column="0" AutoGenerateColumns="False" 
                               GridLinesVisibility="Vertical" VerticalGridLinesBrush="DarkGray" AlternatingRowBackground="LightBlue"
                               ItemsSource="{Binding AlertTasks}">
-                        
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Имя сотрудника" Binding="{Binding WorkerName}"/>
                             <DataGridTextColumn Header="№ задачи" Binding="{Binding TaskNum}"/>
                             <DataGridTextColumn Header="Старт" Binding="{Binding StartDate, StringFormat=hh:mm}"/>
-                            <DataGridTextColumn Header="Первое напоминание" Binding="{Binding IsFirstAlertSend}"/>
-                            <DataGridTextColumn Header="Второе напоминание" Binding="{Binding IsSecondAlertSend}"/>
+                            <DataGridCheckBoxColumn Header="Первое напоминание" Binding="{Binding IsFirstAlertSend, Mode=OneWay}"/>
+                            <DataGridCheckBoxColumn Header="Второе напоминание" Binding="{Binding IsSecondAlertSend, Mode=OneWay}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                     <WrapPanel Grid.Column="1" Margin="10,10,10,10" Orientation="Vertical" ItemWidth="130">
