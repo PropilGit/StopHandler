@@ -32,7 +32,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Имя сотрудника" Binding="{Binding WorkerName}"/>
                             <DataGridTextColumn Header="№ задачи" Binding="{Binding TaskNum}"/>
-                            <DataGridTextColumn Header="Старт" Binding="{Binding StartDate, StringFormat=hh:mm}"/>
+                            <DataGridTextColumn Header="Старт" Binding="{Binding StartDate, StringFormat=HH:mm}"/>
                             <DataGridCheckBoxColumn Header="Первое напоминание" Binding="{Binding IsFirstAlertSend, Mode=OneWay}"/>
                             <DataGridCheckBoxColumn Header="Второе напоминание" Binding="{Binding IsSecondAlertSend, Mode=OneWay}"/>
                         </DataGrid.Columns>
@@ -42,8 +42,8 @@
                                    Text="{Binding Time}"/>
                         <Button HorizontalAlignment="Right" Margin="0,0,10,0" Width="40" Height="14"
                                 Content="Изменить" Background="White" BorderBrush="White" FontSize="8" 
-                                Command="{Binding ShowAlertMenuCommand}"/>
-                        <StackPanel Visibility="{Binding IsVisibleAlertMenu}">
+                                Command="{Binding ShowAlertMenuCommand}" Visibility="{Binding ReverseVisibilityAlertMenu}"/>
+                        <StackPanel Visibility="{Binding VisibilityAlertMenu}">
                             <TextBlock Margin="0,30,0,0"
                                    TextAlignment="Center" FontSize="8" 
                                    Text="Первое напоминание через (ч.)"/>

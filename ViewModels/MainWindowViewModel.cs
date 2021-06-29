@@ -44,48 +44,13 @@ namespace StopHandler.ViewModels
 
             _UntilFirstAlert = 6;
             _UntilSecondAlert = 8;
-            IsVisibleAlertMenu = Visibility.Hidden;
+            VisibilityAlertMenu = Visibility.Hidden;
             AlertTasks = new ObservableCollection<AlertTask>();
 
-            /*/=======================================================================================
-            AlertTasks.Add(new AlertTask("test1", 111111, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
-            AlertTasks.Add(new AlertTask("test2", 111112, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
-            AlertTasks.Add(new AlertTask("test3", 111113, DateTime.Now, UntilFirstAlert, UntilSecondAlert));
-            /*/
+            
         }
 
         #region Alert Tab
-
-        #region Clock
-
-        #region Time
-
-        string _Time = "--:--";
-        public string Time { get => _Time; set => Set(ref _Time, value); }
-
-        #endregion
-
-        Clock _Clock;
-
-        Clock InitializeClock()
-        {
-            Clock clock = Clock.GetInstance();
-            clock.onTimeUpdate += OnTimeUpdate;
-            clock.onTimeUpdate += CheckAlertTasks;
-            return clock;
-        }
-        void OnTimeUpdate()
-        {
-            string strH = DateTime.Now.Hour.ToString();
-            if (strH.Length == 1) strH = "0" + strH;
-
-            string strM = DateTime.Now.Minute.ToString();
-            if (strM.Length == 1) strM = "0" + strM;
-
-            Time = strH + ":" + strM;
-        }
-
-        #endregion
 
         #region UntilFirstAlert UntilSecondAlert
 
@@ -153,10 +118,30 @@ namespace StopHandler.ViewModels
 
         #endregion
 
-        #region IsVisibleAlertMenu 
+        #region VisibilityAlertMenu 
 
-        private Visibility _IsVisibleAlertMenu;
-        public Visibility IsVisibleAlertMenu { get => _IsVisibleAlertMenu; set => Set(ref _IsVisibleAlertMenu, value); }
+        //видимость меню
+        private Visibility _VisibilityAlertMenu;
+        public Visibility VisibilityAlertMenu 
+        { 
+            get => _VisibilityAlertMenu; 
+            set
+            {
+                Set(ref _VisibilityAlertMenu, value);
+
+                //Скрываем элементы, которые должны быть скрыты при открытии меню
+                if (value == Visibility.Visible) ReverseVisibilityAlertMenu = Visibility.Hidden;
+                else ReverseVisibilityAlertMenu = Visibility.Visible;
+            } 
+        }
+
+        #endregion
+
+        #region ReverseVisibilityAlertMenu 
+
+        // Элементы которые должны скрываться при открытии меню
+        private Visibility _ReverseVisibilityAlertMenu;
+        public Visibility ReverseVisibilityAlertMenu { get => _ReverseVisibilityAlertMenu; set => Set(ref _ReverseVisibilityAlertMenu, value); }
 
         #endregion
 
@@ -217,7 +202,7 @@ namespace StopHandler.ViewModels
             DisplayedHoursUntilFirstAlert = UntilFirstAlert;
             DisplayedHoursUntilSecondAlert = UntilSecondAlert;
 
-            IsVisibleAlertMenu = Visibility.Visible;
+            VisibilityAlertMenu = Visibility.Visible;
         }
 
         #endregion
@@ -236,7 +221,7 @@ namespace StopHandler.ViewModels
                 at.UpdateAlertDates(UntilFirstAlert, UntilSecondAlert);
             }
 
-            IsVisibleAlertMenu = Visibility.Hidden;
+            VisibilityAlertMenu = Visibility.Hidden;
         }
 
         #endregion
@@ -247,7 +232,7 @@ namespace StopHandler.ViewModels
         private bool CanDenyAlertSetupCommandExecute(object p) => true;
         private void OnDenyAlertSetupCommandExecuted(object p)
         {
-            IsVisibleAlertMenu = Visibility.Hidden;
+            VisibilityAlertMenu = Visibility.Hidden;
         }
 
         #endregion
@@ -519,6 +504,40 @@ namespace StopHandler.ViewModels
         public void CloseApplication()
         {
             _POSTServer.Stop();
+        }
+
+        #endregion
+
+        #region Clock
+
+        #region Time
+
+        string _Time = "--:--";
+        public string Time { get => _Time; set => Set(ref _Time, value); }
+
+        #endregion
+
+        Clock _Clock;
+
+        Clock InitializeClock()
+        {
+            Clock clock = Clock.GetInstance();
+
+            clock.onTimeUpdate += OnTimeUpdate;
+            clock.onTimeUpdate += CheckAlertTasks;
+
+            OnTimeUpdate();
+            return clock;
+        }
+        void OnTimeUpdate()
+        {
+            string strH = DateTime.Now.Hour.ToString();
+            if (strH.Length == 1) strH = "0" + strH;
+
+            string strM = DateTime.Now.Minute.ToString();
+            if (strM.Length == 1) strM = "0" + strM;
+
+            Time = strH + ":" + strM;
         }
 
         #endregion
