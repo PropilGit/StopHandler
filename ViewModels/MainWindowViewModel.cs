@@ -309,15 +309,28 @@ namespace StopHandler.ViewModels
 
         #region Log
 
+        int maxLogValue = 150;
+        int logCounter = 0;
+
         private string _Log = "";
         public string Log { get => _Log; set => Set(ref _Log, value); }
 
         public void AddLog(string msg, bool isError = false)
         {
             Log += "[" + DateTime.Now + "] " + msg + "\r\n";
+            
+            //если есть пометка об ошибке - отправляем в Дебажный чат
             if (isError)
             {
                 _TelegramBot.SendMessageToChat(msg, GetChatId(debugChat.Tag));
+            }
+
+            //Очищаем лог
+            logCounter++;
+            if (logCounter >= maxLogValue)
+            {
+                logCounter = 0;
+                Log = "";
             }
         }
 
