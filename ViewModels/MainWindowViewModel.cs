@@ -20,6 +20,7 @@ namespace StopHandler.ViewModels
     {
         public MainWindowViewModel()
         {
+            _WebHook = JSONConverter.OpenJSONFile<string>("webhook.json");
             _POSTServer = InitializePOSTServer();
             _TelegramBot = InitializeTelegramBot();
             _Clock = InitializeClock();
@@ -46,8 +47,6 @@ namespace StopHandler.ViewModels
             _UntilSecondAlert = 8;
             VisibilityAlertMenu = Visibility.Hidden;
             AlertTasks = new ObservableCollection<AlertTask>();
-
-            
         }
 
         #region Alert Tab
@@ -111,7 +110,16 @@ namespace StopHandler.ViewModels
 
         void SendAlert(AlertTask alertTask)
         {
-            _POSTServer.SendPOSTAsync("https://bankrotforum.planfix.ru/webhook/json/timerAlert", alertTask.GenerateStringForPlanFix());
+            try
+            {
+                _POSTServer.SendPOSTAsync(_WebHook, alertTask.GenerateStringForPlanFix());
+            }
+            catch (Exception ex)
+            {
+                AddLog("Ошибка отправки уведомления в ПланФикс: " + ex.Message, true);
+                throw;
+            }
+            
 
             if (alertTask.IsSecondAlertSend) AlertTasks.Remove(alertTask);
         }
@@ -496,6 +504,14 @@ namespace StopHandler.ViewModels
                 return true;
             }
         }
+
+        #endregion
+
+        #region _WebHook
+
+        string webhookPath = "webhook.json";
+
+        private string _WebHook;
 
         #endregion
 
