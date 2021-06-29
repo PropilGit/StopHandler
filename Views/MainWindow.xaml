@@ -6,7 +6,7 @@
         xmlns:l="clr-namespace:StopHandler"
         xmlns:vm="clr-namespace:StopHandler.ViewModels"
         xmlns:cmd="clr-namespace:StopHandler.Infrastructure.Commands"
-        Title="TimerHandler"
+        Title="Timer"
         Height="450" 
         Width="650"
         Closed="Window_Closed">

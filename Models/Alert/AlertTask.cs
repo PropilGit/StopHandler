@@ -71,7 +71,7 @@ namespace StopHandler.Models.Alert
         }
         public string GenerateStringForPlanFix()
         {
-            return "{'taskNum':" + TaskNum + ", 'time': " + StartDate.Subtract(DateTime.Now).Hours + "}";
+            return "{'taskNum':" + TaskNum + ", 'time': " + DateTime.Now.Subtract(StartDate).Hours + "}";
         }
     }
 }

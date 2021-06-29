@@ -356,9 +356,14 @@ namespace StopHandler.ViewModels
         {
             try
             {
-                if (AlertTasks != null && AlertTasks.Count > 0)
+                if(AlertTasks == null)
                 {
-                    var at = AlertTasks.Where(i => i.TaskNum == startCmd.TaskNum).Single();
+                    AddLog("Список команд не инициализирован.\n" + startCmd.ToLog(), true);
+                    return;
+                }
+                if (AlertTasks.Count > 0)
+                {
+                    var at = AlertTasks.Where(i => i.TaskNum == startCmd.TaskNum).SingleOrDefault();
                     if (at != null)
                     {
                         AddLog("Дублированный POST-запрос с командой START.\n" + startCmd.ToLog(), true);
@@ -379,14 +384,19 @@ namespace StopHandler.ViewModels
         {
             try
             {
-                if (AlertTasks == null || AlertTasks.Count == 0)
+                if (AlertTasks == null)
+                {
+                    AddLog("Список команд не инициализирован.\n" + stopCmd.ToLog(), true);
+                    return;
+                }
+                if (AlertTasks.Count == 0)
                 {
                     AddLog("POST-запрос с командой STOP, список задач пуст.\n" + stopCmd.ToLog(), true);
                     return;
                 }
                 else
                 {
-                    var at = AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).Single();
+                    var at = AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).SingleOrDefault();
                     if (at == null)
                     {
                         AddLog("POST-запрос с командой STOP, в списке отсутствует соответствующая задача.\n" + stopCmd.ToLog(), true);
