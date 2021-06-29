@@ -6,20 +6,17 @@ namespace StopHandler.Models.Telegram
 {
     class TelegramChat
     {
-        long _Id;
-        public long Id { get => _Id; }
+        public long Id { get; private set; }
 
-        string _Name;
-        public string Name { get => _Name; set => _Name = value; }
+        public string Name { get; private set; }
         
-        string _Tag;
-        public string Tag { get => _Tag; set => _Tag = value; }
+        public string Tag { get; private set; }
 
         public TelegramChat(long id, string name, string tag)
         {
-            _Id = id;
-            _Name = name;
-            _Tag = tag;
+            Id = id;
+            Name = name;
+            Tag = tag;
         }
     }
 }

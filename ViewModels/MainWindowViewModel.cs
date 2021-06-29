@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using StopHandler.ViewModels.Base;
@@ -10,7 +9,6 @@ using StopHandler.Models.Telegram;
 using StopHandler.Infrastructure.Commands;
 using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
-using System.Windows.Threading;
 using StopHandler.Models.Alert;
 using System.Linq;
 
@@ -47,6 +45,17 @@ namespace StopHandler.ViewModels
             _UntilSecondAlert = 8;
             VisibilityAlertMenu = Visibility.Hidden;
             AlertTasks = new ObservableCollection<AlertTask>();
+
+            /*
+            ObservableCollection<TelegramChat> testTGChats = new ObservableCollection<TelegramChat>(){
+                new TelegramChat(11111111, "test chat 1", "TCH1"),
+                new TelegramChat(11111111, "test chat 1", "TCH1"),
+                new TelegramChat(11111111, "test chat 1", "TCH1")};
+
+            PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ1", testTGChats));
+            PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ2", testTGChats));
+            PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ2", testTGChats));
+            */
         }
 
         #region Alert Tab
@@ -484,8 +493,7 @@ namespace StopHandler.ViewModels
 
         string PFUsersPath = "PlanFixUsers.json";
 
-        private ObservableCollection<PlanFixUser> _PFUsers;
-        public ObservableCollection<PlanFixUser> PFUsers { get => _PFUsers; set => Set(ref _PFUsers, value); }
+        public ObservableCollection<PlanFixUser> PFUsers { get; private set; }
 
         void LoadPFUsersList()
         {
@@ -507,7 +515,7 @@ namespace StopHandler.ViewModels
 
             App.Current.Dispatcher.Invoke((Action)delegate 
             {
-                PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName));
+                PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName, new ObservableCollection<TelegramChat>()));
             });
 
             if (JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath)) return true;
