@@ -48,7 +48,11 @@ namespace StopHandler.Models.POST
             }
 
             if (values == null || values.Length == 0) return null;
-            foreach (var val in values) if (val == null || val == "") return null;
+            for (int i = 0; i < values.Length - 1; i++)
+            {
+                if (values[i] == null || values[i] == "") return null;
+            }
+            if (values[values.Length - 1] == "") values[values.Length - 1] = "#DBG";
 
             if (values[0] == StopCommand.identifier) return StopCommand.Instantiate(values); //STOP
             if (values[0] == StartCommand.identifier) return StartCommand.Instantiate(values); //START

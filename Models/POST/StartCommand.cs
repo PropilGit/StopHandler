@@ -14,7 +14,7 @@ namespace StopHandler.Models.POST
         */
 
         public string[] Tags { get => tags; }
-        public static string[] tags = new string[4] { "CMD", "TASK", "WRK", "STR" };
+        public static string[] tags = new string[4] { "CMD", "TASK", "WRK", "STR"};
         public string Identifier { get => identifier; }
         public static string identifier = "START";
 
