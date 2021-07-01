@@ -16,7 +16,7 @@
         <vm:MainWindowViewModel/>
     </Window.DataContext>
     -->
-    
+   
     <DockPanel>
         <TabControl DockPanel.Dock="Top">
             <TabItem Header="Timer">

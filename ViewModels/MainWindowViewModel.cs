@@ -55,6 +55,8 @@ namespace StopHandler.ViewModels
             PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ1", testTGChats));
             PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ2", testTGChats));
             PFUsers.Add(new PlanFixUser(Guid.NewGuid(), "ИМЯ2", testTGChats));
+
+            JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath);
             */
         }
 
@@ -360,11 +362,11 @@ namespace StopHandler.ViewModels
 
         void OnPOSTRequest(IPOSTCommand cmd)
         {
-            UpdatePFUserList(cmd.Worker);
+            UpdatePFUsersList(cmd.Worker);
+
             if (cmd.Identifier == StopCommand.identifier) ApplyCommand((StopCommand)cmd);
             else if (cmd.Identifier == StartCommand.identifier) ApplyCommand((StartCommand)cmd);
             else ApplyCommand((ErrorCommand)cmd);
-
         }
 
         void ApplyCommand(StartCommand startCmd)
@@ -505,7 +507,7 @@ namespace StopHandler.ViewModels
             }
         }
 
-        bool UpdatePFUserList(string newUserName)
+        bool UpdatePFUsersList(string newUserName)
         {
             foreach (var pfu in PFUsers)
             {
@@ -523,6 +525,34 @@ namespace StopHandler.ViewModels
             {
                 AddLog("Не удалось сохранить обновленный список пользователей планФикса", true);
                 return true;
+            }
+        }
+
+        bool UpdatePFUsersList(string pfUserName, TelegramChat subsriber)
+        {
+
+            var pfUser = PFUsers.Where(pfu => pfu.Name == pfUserName).SingleOrDefault();
+            if (pfUser == null)
+            {
+                AddLog("Попытка подписаться на [" + pfUserName + "], которого нет в списке.", true);
+            }
+
+            var sub = pfUser.Subscribers.Where(s => s.Id == subsriber.Id).SingleOrDefault();
+            if (sub != null)
+            {
+                AddLog("Повторная попытка подписаться на [" + pfUserName + "].", true);
+            }
+
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                pfUser.Subscribers.Add(subsriber);
+            });
+
+            if (JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath)) return true;
+            else
+            {
+                AddLog("Не удалось сохранить обновленный список подписок на пользователя планФикса [" + pfUserName + "]", true);
+                return false;
             }
         }
 
@@ -583,6 +613,7 @@ namespace StopHandler.ViewModels
 
 
 //public string Log { get => controller.Log; set => Set(ref controller.Log, value); }
+
 /*
 #region CloseApplicationCommand
 

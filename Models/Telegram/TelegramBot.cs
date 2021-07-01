@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using StopHandler.Infrastructure.Files;
+using StopHandler.Models.Telegram.Commands;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -30,15 +32,22 @@ namespace StopHandler.Models.Telegram
 
         static ITelegramBotClient botClient;
 
+        public delegate void OnMessage(long chatId, string message);
+        public event OnMessage onMessage;
+
+        Dictionary<long, ITelegramBotCommand> activeCommands;
+
         TelegramBot()
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             string token = JSONConverter.OpenJSONFile<string>("token.json");
             botClient = new TelegramBotClient(token);
 
-            var me = botClient.GetMeAsync().Result;
+            //var me = botClient.GetMeAsync().Result;
+            activeCommands = new Dictionary<long, ITelegramBotCommand>();
 
             botClient.StartReceiving();
+            botClient.OnMessage += GetMessageFromchat;
         }
         ~TelegramBot()
         {
@@ -78,6 +87,52 @@ namespace StopHandler.Models.Telegram
         }
         #endregion
 
+        #region Получение сообщений
+
+        async void GetMessageFromchat(object sender, MessageEventArgs e)
+        {
+            if (e.Message.Text != null)
+            {
+                long chId = e.Message.Chat.Id;
+                string msg = e.Message.Text;
+
+                ITelegramBotCommand command;
+                if (activeCommands.Count == 0) command = null;
+                else command = activeCommands.Where(ac => ac.Key == chId).SingleOrDefault().Value;
+
+                if (command != null) command.SetAttribute(msg);
+                else
+                {
+                    command = TelegramBotCommand.InstantiateCommand(msg);
+                    activeCommands.Add(chId, command);
+                }
+
+                if (command != null)
+                {
+                    string question = command.GetAttributeQuestion();
+                    if (!string.IsNullOrEmpty(question)) SendMessageToChat(question, chId);
+
+                    if (command.IsAllAttributesFilled)
+                    {
+                        //Execute
+
+                        SendMessageToChat("🥳", chId);
+                        activeCommands.Remove(chId);
+                    }
+                }
+                else SendMessageToChat("Ну и зачем вы написали: *\"" + msg + "\"*?", chId);
+
+                //onMessage(e.Message.Chat.Id, e.Message.Text);
+            }
+        }
+
+        #endregion
+
+        #region Commands
+
+
+
+        #endregion
     }
 }
 
@@ -140,28 +195,7 @@ bool RememberChat(long id)
 }
 */
 #endregion
-#region Получение сообщений
-/* ===== MESSAGE ==============================================
-async void Bot_CheckMessage(object sender, MessageEventArgs e)
-{
-    if (e.Message.Text != null)
-    {
-        if (RememberChat(e.Message.Chat.Id))
-        {
-            await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "Вэлком!");
-            return;
-        }
 
-        if (isActiveRequest)
-        {
-            onResultReceiving(e.Message.Text);
-            isActiveRequest = false;
-        }
-        //await botClient.SendTextMessageAsync(chatId: e.Message.Chat, text: "");
-    }
-}
-*/
-#endregion
 #region CAPTCHA
 // ===== CAPTCHA ==============================================
 /*public async void Bot_SendCaptchaAsync(Captcha captcha)

@@ -6,7 +6,6 @@ namespace StopHandler.Models.POST
 {
     abstract class POSTCommand
     {
-
         public static IPOSTCommand Parse(string post)
         {
             List<string> identifiers = new List<string>();
