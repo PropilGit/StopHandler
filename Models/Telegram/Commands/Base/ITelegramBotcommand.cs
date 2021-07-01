@@ -4,15 +4,17 @@ using System.Text;
 
 namespace StopHandler.Models.Telegram.Commands
 {
-    interface ITelegramBotCommand
+    internal interface ITelegramBotCommand
     {
-        public static string Name { get; }
-        public static Type Type { get; }
-        public static string Description { get; }
+        public static string Name;
+        public static Type Type;
+
+        public string CommandName { get; }
+        public string Description { get; }
         string SuccessMessage { get; }
         string FailMessage { get; }
 
-
+        public List<string> Attributes { get; }
         bool SetAttribute(string value);
         string GetAttributeQuestion();
         bool IsAllAttributesFilled { get; }

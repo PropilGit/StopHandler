@@ -9,7 +9,8 @@ namespace StopHandler.Models.Alert
 {
     class AlertTask: ViewModel
     {
-        public string WorkerName { get; }
+        public string WorkerName { get => Worker.Name; }
+        public PlanFixUser Worker { get; }
         public int TaskNum { get; }
         public DateTime StartDate { get; }
 
@@ -21,9 +22,9 @@ namespace StopHandler.Models.Alert
         public DateTime SecondAlertDate { get; private set; }
         public bool IsSecondAlertSend { get; private set; }
 
-        public AlertTask(string workerName, int taskNum, DateTime startDate, int untilFirstAlert, int untilSecondalert)
+        public AlertTask(PlanFixUser worker, int taskNum, DateTime startDate, int untilFirstAlert, int untilSecondalert)
         {
-            WorkerName = workerName;
+            Worker = worker;
             TaskNum = taskNum;
 
             StartDate = startDate;
@@ -62,16 +63,14 @@ namespace StopHandler.Models.Alert
             return false;
         }
 
-        public Dictionary<string, string> GenerateValuesForPlanFix()
-        {
-            return new Dictionary<string, string> {
-                { "taskNum", TaskNum.ToString() },
-                { "time", StartDate.Subtract(DateTime.Now).Hours.ToString() }
-            };
-        }
         public string GenerateStringForPlanFix()
         {
             return "{'taskNum':" + TaskNum + ", 'time': " + DateTime.Now.Subtract(StartDate).Hours + "}";
+        }
+        public string GenerateStringForTelegram()
+        {
+            return "Задача [" + TaskNum + "](https://bankrotforum.planfix.ru/task/" + TaskNum + ") запущена на протяжении *" + DateTime.Now.Subtract(StartDate).Hours + " ч.*\n"
+                + "Напишите отчет по задаче и остановите таймер.";
         }
     }
 }

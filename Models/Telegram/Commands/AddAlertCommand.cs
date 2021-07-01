@@ -4,51 +4,22 @@ using System.Text;
 
 namespace StopHandler.Models.Telegram.Commands
 {
-    class AddAlertCommand : ITelegramBotCommand
+    class AddAlertCommand : TelegramBotCommand
     {
-        public static string Name => "addalert";
+        public new static string Name => "addalert";
+        public new static Type Type => Type.GetType("StopHandler.Models.Telegram.Commands.AddAlertCommand");
+        public new static string Description => "Подписка на уведомления о запущенной задаче";
 
-        public static Type Type => Type.GetType("StopHandler.Models.Telegram.Commands.AddAlertCommand");
-
-        public static string Description => "Подписка на уведомления о запущенной задаче";
-
-        public string SuccessMessage => "Вы успешно подписались на уведомления о запущенной задаче для сотрудника [" + WorkerName + "]";
-
-        public string FailMessage => "Не удалось подписаться на уведомления о запущенной задаче для сотрудника [" + WorkerName + "] \n" + _FailReason;
-
-        string _FailReason = "";
-
-
-        new TelegramComandAttribute[] Attributes = new TelegramComandAttribute[1] {
-            new TelegramComandAttribute("WorkerName", "Введите фамилию и имя сотрудника")
-        };
-
-        int _CurrentAttributeIndex;
-
-        public bool SetAttribute(string value)
+        public AddAlertCommand()
         {
-            if (_CurrentAttributeIndex == 0)
-            {
-                WorkerName = value;
-                _CurrentAttributeIndex++;
-                return true;
-            }
-            else return false;
-        }
+            _CommandName = "addalert";
+            _Attributes = new TelegramComandAttribute[1] {
+                new TelegramComandAttribute("WorkerName", "Введите фамилию и имя сотрудника")
+            };
 
-        public string GetAttributeQuestion()
-        {
-            if (_CurrentAttributeIndex >= Attributes.Length) return null;
-            return Attributes[_CurrentAttributeIndex].Question;
+            _Description = "Подписка на уведомления о запущенной задаче";
+            _SuccessMessage = "Вы успешно подписались на уведомления о запущенной задаче для сотрудника " + _Attributes[0].Value + "";
+            _FailMessage = "Не удалось подписаться на уведомления о запущенной задаче для сотрудника " + _Attributes[0].Value + "";
         }
-
-        public bool IsAllAttributesFilled {
-            get {
-                if (_CurrentAttributeIndex == Attributes.Length) return true;
-                else return false;
-            }
-        }
-
-        public string WorkerName { get; private set; }
     }
 }

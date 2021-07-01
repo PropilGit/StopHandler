@@ -32,8 +32,8 @@ namespace StopHandler.Models.Telegram
 
         static ITelegramBotClient botClient;
 
-        public delegate void OnMessage(long chatId, string message);
-        public event OnMessage onMessage;
+        public delegate bool ExecuteCommand(string commandName, long chatId, string shatName, List<string> attributes);
+        public event ExecuteCommand onCommandExecute;
 
         Dictionary<long, ITelegramBotCommand> activeCommands;
 
@@ -104,7 +104,7 @@ namespace StopHandler.Models.Telegram
                 else
                 {
                     command = TelegramBotCommand.InstantiateCommand(msg);
-                    activeCommands.Add(chId, command);
+                    if (command != null) activeCommands.Add(chId, command);
                 }
 
                 if (command != null)
@@ -115,8 +115,12 @@ namespace StopHandler.Models.Telegram
                     if (command.IsAllAttributesFilled)
                     {
                         //Execute
+                        bool result = false;
+                        if(onCommandExecute != null) result = onCommandExecute(command.CommandName, chId, e.Message.Chat.Username, command.Attributes);
 
-                        SendMessageToChat("🥳", chId);
+                        if (result) SendMessageToChat(command.SuccessMessage + "\n🥳", chId);
+                        else SendMessageToChat(command.FailMessage, chId);
+
                         activeCommands.Remove(chId);
                     }
                 }

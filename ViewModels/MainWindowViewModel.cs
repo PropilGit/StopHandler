@@ -11,6 +11,7 @@ using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
 using StopHandler.Models.Alert;
 using System.Linq;
+using StopHandler.Models.Telegram.Commands;
 
 namespace StopHandler.ViewModels
 {
@@ -124,6 +125,11 @@ namespace StopHandler.ViewModels
             try
             {
                 _POSTServer.SendPOSTAsync(_WebHook, alertTask.GenerateStringForPlanFix());
+
+                foreach (var sub in alertTask.Worker.Subscribers)
+                {
+                    _TelegramBot.SendMessageToChat(alertTask.GenerateStringForTelegram(), sub.Id);
+                }
             }
             catch (Exception ex)
             {
@@ -268,6 +274,7 @@ namespace StopHandler.ViewModels
         {
             TelegramBot newTelegramBot = TelegramBot.GetInstance();
             newTelegramBot.onLogUpdate += AddLog;
+            newTelegramBot.onCommandExecute += TelegramBotCommandExecute;
 
             return newTelegramBot;
         }
@@ -310,6 +317,20 @@ namespace StopHandler.ViewModels
             //if (String.IsNullOrEmpty(Message)) return;
             _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
             //Message = "";
+        }
+
+        #endregion
+
+
+        #region TelegramBotCommandExecute
+
+        bool TelegramBotCommandExecute(string commandName, long chatId, string chatName, List<string> attributes)
+        {
+            if (commandName == AddAlertCommand.Name)
+            {
+                return AddSubscribe(attributes[0], new TelegramChat(chatId, chatName, "SUB"));
+            }
+            else return false;
         }
 
         #endregion
@@ -362,7 +383,7 @@ namespace StopHandler.ViewModels
 
         void OnPOSTRequest(IPOSTCommand cmd)
         {
-            UpdatePFUsersList(cmd.Worker);
+            AddPFUsers(cmd.Worker);
 
             if (cmd.Identifier == StopCommand.identifier) ApplyCommand((StopCommand)cmd);
             else if (cmd.Identifier == StartCommand.identifier) ApplyCommand((StartCommand)cmd);
@@ -389,7 +410,8 @@ namespace StopHandler.ViewModels
                 }
                 App.Current.Dispatcher.Invoke((Action)delegate
                 {
-                    AlertTasks.Add(new AlertTask(startCmd.Worker, startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+
+                    AlertTasks.Add(new AlertTask(FindPFUser(startCmd.Worker), startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
                 });
             }
             catch (Exception ex)
@@ -507,53 +529,51 @@ namespace StopHandler.ViewModels
             }
         }
 
-        bool UpdatePFUsersList(string newUserName)
+        PlanFixUser FindPFUser(string name)
         {
-            foreach (var pfu in PFUsers)
-            {
-                //элемент есть в списке
-                if (pfu.Name == newUserName) return true;                
-            }
+            if (PFUsers == null || PFUsers.Count == 0) return null;
+            return PFUsers.Where(pfu => pfu.Name == name).SingleOrDefault();
+        }
 
-            App.Current.Dispatcher.Invoke((Action)delegate 
-            {
-                PFUsers.Add(new PlanFixUser(Guid.NewGuid(), newUserName, new ObservableCollection<TelegramChat>()));
-            });
-
+        bool SaveUserList()
+        {
             if (JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath)) return true;
             else
             {
                 AddLog("Не удалось сохранить обновленный список пользователей планФикса", true);
-                return true;
+                return false;
             }
         }
 
-        bool UpdatePFUsersList(string pfUserName, TelegramChat subsriber)
+        bool AddPFUsers(string name)
         {
+            if (FindPFUser(name) != null) return false;
 
-            var pfUser = PFUsers.Where(pfu => pfu.Name == pfUserName).SingleOrDefault();
-            if (pfUser == null)
+            App.Current.Dispatcher.Invoke((Action)delegate 
             {
-                AddLog("Попытка подписаться на [" + pfUserName + "], которого нет в списке.", true);
-            }
+                PFUsers.Add(new PlanFixUser(Guid.NewGuid(), name, new ObservableCollection<TelegramChat>()));
+            });
 
-            var sub = pfUser.Subscribers.Where(s => s.Id == subsriber.Id).SingleOrDefault();
-            if (sub != null)
+            return SaveUserList();
+        }
+
+        bool AddSubscribe(string name, TelegramChat subsriber)
+        {
+            PlanFixUser user = FindPFUser(name);
+            if (user == null)
+                AddLog("Попытка подписаться на [" + name + "], которого нет в списке.", true);
+
+            if (user.FindSubscriber(subsriber.Id))
             {
-                AddLog("Повторная попытка подписаться на [" + pfUserName + "].", true);
+                AddLog("Повторная попытка подписаться на [" + name + "].", true);
             }
 
             App.Current.Dispatcher.Invoke((Action)delegate
             {
-                pfUser.Subscribers.Add(subsriber);
+                user.AddSubscriber(subsriber);
             });
 
-            if (JSONConverter.SaveJSONFile<ObservableCollection<PlanFixUser>>(PFUsers, PFUsersPath)) return true;
-            else
-            {
-                AddLog("Не удалось сохранить обновленный список подписок на пользователя планФикса [" + pfUserName + "]", true);
-                return false;
-            }
+            return SaveUserList();
         }
 
         #endregion
