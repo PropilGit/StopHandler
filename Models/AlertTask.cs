@@ -37,11 +37,11 @@ namespace StopHandler.Models
         public void UpdateAlertDates(int untilFirstAlert, int untilSecondAlert)
         {
             //debug
-            FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
-            SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
+            //FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
+            //SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
 
-            //FirstAlertDate = StartDate.AddHours(untilFirstAlert);
-            //SecondAlertDate = StartDate.AddHours(untilSecondAlert);
+            FirstAlertDate = StartDate.AddHours(untilFirstAlert);
+            SecondAlertDate = StartDate.AddHours(untilSecondAlert);
         }
 
         public bool CheckFirstAlert(DateTime dt)
