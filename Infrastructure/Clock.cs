@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace StopHandler.Models
+namespace StopHandler.Infrastructure
 {
     class Clock
     {

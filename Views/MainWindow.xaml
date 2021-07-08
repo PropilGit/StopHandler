@@ -31,7 +31,8 @@
                               ItemsSource="{Binding AlertTasks}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Имя сотрудника" Binding="{Binding WorkerName}"/>
-                            <DataGridTextColumn Header="№ задачи" Binding="{Binding TaskNum}"/>
+                            <DataGridTextColumn Header="№" Binding="{Binding TaskNum}"/>
+                            <DataGridTextColumn Header="Задача" Binding="{Binding TaskName}"/>
                             <DataGridTextColumn Header="Старт" Binding="{Binding StartDate, StringFormat=HH:mm}"/>
                             <DataGridCheckBoxColumn Header="Первое напоминание" Binding="{Binding IsFirstAlertSend, Mode=OneWay}"/>
                             <DataGridCheckBoxColumn Header="Второе напоминание" Binding="{Binding IsSecondAlertSend, Mode=OneWay}"/>

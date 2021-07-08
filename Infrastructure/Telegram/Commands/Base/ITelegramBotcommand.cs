@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StopHandler.Models.Telegram.Commands
+namespace StopHandler.Infrastructure.Telegram.Commands
 {
     internal interface ITelegramBotCommand
     {

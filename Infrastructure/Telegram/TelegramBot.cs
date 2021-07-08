@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using StopHandler.Infrastructure.Files;
-using StopHandler.Models.Telegram.Commands;
+using StopHandler.Infrastructure.Telegram.Commands;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,7 +14,7 @@ using Message = Telegram.Bot.Types.Message;
 
 //Используется: https://github.com/TelegramBots/telegram.bot
 
-namespace StopHandler.Models.Telegram
+namespace StopHandler.Infrastructure.Telegram
 {
     class TelegramBot
     {

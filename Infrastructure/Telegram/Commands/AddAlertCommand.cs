@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace StopHandler.Models.Telegram.Commands
+namespace StopHandler.Infrastructure.Telegram.Commands
 {
     class AddAlertCommand : TelegramBotCommand
     {
         public new static string Name => "addalert";
-        public new static Type Type => Type.GetType("StopHandler.Models.Telegram.Commands.AddAlertCommand");
+        public new static Type Type => Type.GetType("StopHandler.Infrastructure.Telegram.Commands.AddAlertCommand");
         public new static string Description => "Подписка на уведомления о запущенной задаче";
 
         public AddAlertCommand()

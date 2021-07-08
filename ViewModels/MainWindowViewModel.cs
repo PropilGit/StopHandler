@@ -5,13 +5,13 @@ using System.Windows.Input;
 using StopHandler.ViewModels.Base;
 using StopHandler.Models.POST;
 using StopHandler.Models;
-using StopHandler.Models.Telegram;
+using StopHandler.Infrastructure;
+using StopHandler.Infrastructure.Telegram;
 using StopHandler.Infrastructure.Commands;
 using StopHandler.Infrastructure.Files;
 using System.Collections.ObjectModel;
-using StopHandler.Models.Alert;
 using System.Linq;
-using StopHandler.Models.Telegram.Commands;
+using StopHandler.Infrastructure.Telegram.Commands;
 
 namespace StopHandler.ViewModels
 {
@@ -309,18 +309,18 @@ namespace StopHandler.ViewModels
         {
             StopCommand stopCmd = new StopCommand(
                 12345678,
-                "Иванов Иван",
+                "Название задачи",
+                "Хлупичев Владимир",
                 "Однажды, в студеную зимнюю пору, Я из лесу вышел; был сильный мороз. Гляжу, поднимается медленно в гору Лошадка, везущая хворосту воз.",
                 DateTime.Now,
                 DateTime.Now.AddMinutes(5),
-                "TEST");
+                "#DBG");
             //if (String.IsNullOrEmpty(Message)) return;
             _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), _SelectedChat.Id);
             //Message = "";
         }
 
         #endregion
-
 
         #region TelegramBotCommandExecute
 
@@ -329,6 +329,10 @@ namespace StopHandler.ViewModels
             if (commandName == AddAlertCommand.Name)
             {
                 return AddSubscribe(attributes[0], new TelegramChat(chatId, chatName, "SUB"));
+            }
+            else if (commandName == RemoveAlertCommand.Name)
+            {
+                return RemoveSubscribe(attributes[0], new TelegramChat(chatId, chatName, "SUB"));
             }
             else return false;
         }
@@ -404,14 +408,14 @@ namespace StopHandler.ViewModels
                     var at = AlertTasks.Where(i => i.TaskNum == startCmd.TaskNum).SingleOrDefault();
                     if (at != null)
                     {
-                        AddLog("Дублированный POST-запрос с командой START.\n" + startCmd.ToLog(), true);
+                        //AddLog("Дублированный POST-запрос с командой START.\n" + startCmd.ToLog(), true);
                         return;
                     }
                 }
                 App.Current.Dispatcher.Invoke((Action)delegate
                 {
 
-                    AlertTasks.Add(new AlertTask(FindPFUser(startCmd.Worker), startCmd.TaskNum, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
+                    AlertTasks.Add(new AlertTask(FindPFUser(startCmd.Worker), startCmd.TaskNum, startCmd.TaskName, startCmd.Start, UntilFirstAlert, UntilSecondAlert));
                 });
             }
             catch (Exception ex)
@@ -423,34 +427,37 @@ namespace StopHandler.ViewModels
         {
             try
             {
+                if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
+                foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
+                {
+                    _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
+                }
+
                 if (AlertTasks == null)
                 {
                     AddLog("Список команд не инициализирован.\n" + stopCmd.ToLog(), true);
                     return;
                 }
+                
                 if (AlertTasks.Count == 0)
                 {
-                    AddLog("POST-запрос с командой STOP, список задач пуст.\n" + stopCmd.ToLog(), true);
-                    return;
+                    //AddLog("POST-запрос с командой STOP, список задач пуст.\n" + stopCmd.ToLog(), true);
+                    //return;
                 }
+                
                 else
                 {
                     var at = AlertTasks.Where(i => i.TaskNum == stopCmd.TaskNum).SingleOrDefault();
                     if (at == null)
                     {
-                        AddLog("POST-запрос с командой STOP, в списке отсутствует соответствующая задача.\n" + stopCmd.ToLog(), true);
-                        return;
+                        //AddLog("POST-запрос с командой STOP, в списке отсутствует соответствующая задача.\n" + stopCmd.ToLog(), true);
+                        //return;
                     }
                     else
                     {
                         App.Current.Dispatcher.Invoke((Action)delegate {
                             AlertTasks.Remove(at);
                         });
-                        if (stopCmd.Chat.IndexOf(debugChat.Tag) != -1 && stopCmd.Chat.IndexOf("#БФ") != -1) _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), GetChatId("#БФ"));
-                        foreach (var chId in GetChatsIdFromString(stopCmd.Chat))
-                        {
-                            _TelegramBot.SendMessageToChat(stopCmd.GenerateMessage(), chId);
-                        }
                     }
                 }
             }
@@ -571,6 +578,25 @@ namespace StopHandler.ViewModels
             App.Current.Dispatcher.Invoke((Action)delegate
             {
                 user.AddSubscriber(subsriber);
+            });
+
+            return SaveUserList();
+        }
+
+        bool RemoveSubscribe(string name, TelegramChat subsriber)
+        {
+            PlanFixUser user = FindPFUser(name);
+            if (user == null)
+                AddLog("Попытка отписаться от [" + name + "], которого нет в списке.", true);
+
+            if (!user.FindSubscriber(subsriber.Id))
+            {
+                AddLog("Попытка отписаться от [" + name + "], на которого не было подписки", true);
+            }
+
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                user.RemoveSubscriber(subsriber.Id);
             });
 
             return SaveUserList();

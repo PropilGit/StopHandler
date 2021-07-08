@@ -5,13 +5,14 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace StopHandler.Models.Alert
+namespace StopHandler.Models
 {
     class AlertTask: ViewModel
     {
         public string WorkerName { get => Worker.Name; }
         public PlanFixUser Worker { get; }
         public int TaskNum { get; }
+        public string TaskName { get; }
         public DateTime StartDate { get; }
 
         public DateTime FirstAlertDate { get; private set; }
@@ -22,10 +23,11 @@ namespace StopHandler.Models.Alert
         public DateTime SecondAlertDate { get; private set; }
         public bool IsSecondAlertSend { get; private set; }
 
-        public AlertTask(PlanFixUser worker, int taskNum, DateTime startDate, int untilFirstAlert, int untilSecondalert)
+        public AlertTask(PlanFixUser worker, int taskNum, string taskName, DateTime startDate, int untilFirstAlert, int untilSecondalert)
         {
             Worker = worker;
             TaskNum = taskNum;
+            TaskName = taskName;
 
             StartDate = startDate;
 
@@ -35,11 +37,11 @@ namespace StopHandler.Models.Alert
         public void UpdateAlertDates(int untilFirstAlert, int untilSecondAlert)
         {
             //debug
-            //FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
-            //SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
+            FirstAlertDate = StartDate.AddMinutes(untilFirstAlert);
+            SecondAlertDate = StartDate.AddMinutes(untilSecondAlert);
 
-            FirstAlertDate = StartDate.AddHours(untilFirstAlert);
-            SecondAlertDate = StartDate.AddHours(untilSecondAlert);
+            //FirstAlertDate = StartDate.AddHours(untilFirstAlert);
+            //SecondAlertDate = StartDate.AddHours(untilSecondAlert);
         }
 
         public bool CheckFirstAlert(DateTime dt)
@@ -69,7 +71,7 @@ namespace StopHandler.Models.Alert
         }
         public string GenerateStringForTelegram()
         {
-            return "Задача [" + TaskNum + "](https://bankrotforum.planfix.ru/task/" + TaskNum + ") запущена на протяжении *" + DateTime.Now.Subtract(StartDate).Hours + " ч.*\n"
+            return "Задача [" + TaskName + "](https://bankrotforum.planfix.ru/task/" + TaskNum + ") запущена на протяжении *" + DateTime.Now.Subtract(StartDate).Hours + " ч.*\n"
                 + "Напишите отчет по задаче и остановите таймер.";
         }
     }

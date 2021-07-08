@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StopHandler.Models.Telegram
+namespace StopHandler.Infrastructure.Telegram
 {
     class TelegramChat
     {

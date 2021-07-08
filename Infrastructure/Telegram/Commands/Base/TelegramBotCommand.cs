@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
 using System.Linq;
 
-namespace StopHandler.Models.Telegram.Commands
+namespace StopHandler.Infrastructure.Telegram.Commands
 {
     abstract class TelegramBotCommand : ITelegramBotCommand
     {
@@ -12,7 +10,8 @@ namespace StopHandler.Models.Telegram.Commands
 
         public static Dictionary<string, Type> Commands = new Dictionary<string, Type>()
         {
-            {AddAlertCommand.Name, AddAlertCommand.Type}
+            {AddAlertCommand.Name, AddAlertCommand.Type},
+            {RemoveAlertCommand.Name, RemoveAlertCommand.Type}
         };
         
         public static ITelegramBotCommand InstantiateCommand(string msg)
